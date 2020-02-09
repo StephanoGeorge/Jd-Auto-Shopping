@@ -1,0 +1,4 @@
+/config.*
+/*.log
+.idea
+/__pycache__

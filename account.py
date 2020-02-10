@@ -1,4 +1,5 @@
 import logging
+import re
 from random import random
 
 import globals
@@ -35,14 +36,15 @@ class Account:
             return
 
         # 结算
-        # if globals.requestUntilSuccess(globals.GET, 'https://trade.jd.com/shopping/order/getOrderInfo.action',
-        #                                sess=self.sess,
-        #                                actionName='结算',
-        #                                successLogMsgFun=lambda resp: self.phoneNumber,
-        #                                timeout=3,
-        #                                sleepTime=0.5,
-        #                                attemptTimes=30) is None:
-        #     return
+        resp = globals.requestUntilSuccess(
+            '结算', globals.GET, 'https://trade.jd.com/shopping/order/getOrderInfo.action',
+            sess=self.sess,
+            timeout=3,
+            sleepTime=0.5,
+            attemptTimes=30)
+        if resp is None:
+            return
+        self.config['riskControl'] = re.search('riskControl" value="(.+?)"', resp.text).group(1)
 
         # 提交订单
         if globals.requestUntilSuccess(

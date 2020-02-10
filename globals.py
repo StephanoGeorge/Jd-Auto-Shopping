@@ -76,7 +76,7 @@ def requestUntilSuccess(
                 allow_redirects=False)
             if not checkFun(resp):
                 raise Exception('未通过 {} 检查'.format(str(checkFun)))
-            if 300 <= resp.status_code < 400:
+            if 'Location' in resp.headers:
                 logging.log(logLvl, '从 {} 重定向至 {}'.format(url, resp.headers['Location']))
                 url = resp.headers['Location']
                 # headers['Referer'] =

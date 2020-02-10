@@ -35,8 +35,8 @@ def monitor():
             params=isInStockApiParams,
             headers={'Cookie': None},
             logLvl=logging.DEBUG,
-            timeout=1,
-            sleepTime=0.3,
+            timeout=1.5,
+            sleepTime=0,
             attemptTimes=3)
         if resp is None:
             continue

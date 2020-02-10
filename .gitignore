@@ -1,5 +1,5 @@
-/config.*
-/*.log
-/*.out
-.idea
-/__pycache__
+config.*
+*.log
+*.out
+.idea/
+__pycache__/

@@ -1,5 +1,28 @@
 {
-  "MobilePhoneNumber": "",
-  "loginPassword": "",
-  "paymentPassword": ""
+    // 配置完成后删除注释行
+    // 地区代码
+    "area": "00_0000_00000_00000",
+    // 监控的商品列表
+    "items": {
+        // <商品 ID>: true 为正常, false 为已下架, 会在程序结束后更新
+        "1835968": true,
+        "1835968": true
+    },
+    // 账户列表
+    "accounts": {
+        "<手机号码>": {
+            // 下单相关
+            "config": {
+                "eid": "",
+                "fp": "",
+                "riskControl": "",
+                "trackId": ""
+            },
+            "cookies": {
+                // cookies 列表
+                "cookie_1": "0",
+                "cookie_2": "0"
+            }
+        }
+    }
 }

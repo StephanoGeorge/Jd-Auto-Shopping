@@ -1,7 +1,4 @@
 import logging
-import os
-import re
-
 import time
 from threading import Thread
 

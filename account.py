@@ -28,7 +28,7 @@ class Account:
                                        logLvl=logging.ERROR,
                                        timeout=3,
                                        sleepTime=0.5,
-                                       attemptTimes=10) is None:
+                                       attemptTimes=30) is None:
             return
         # 结算
         # if globals.requestUntilSuccess(globals.GET, 'https://trade.jd.com/shopping/order/getOrderInfo.action',
@@ -37,7 +37,7 @@ class Account:
         #                                successLogMsgFun=lambda resp: self.phoneNumber,
         #                                timeout=3,
         #                                sleepTime=0.5,
-        #                                attemptTimes=10) is None:
+        #                                attemptTimes=30) is None:
         #     return
         # 提交订单
         if globals.requestUntilSuccess('提交订单', globals.POST, 'https://trade.jd.com/shopping/order/submitOrder.action',
@@ -63,7 +63,7 @@ class Account:
                                        logLvl=logging.ERROR,
                                        timeout=3,
                                        sleepTime=0.5,
-                                       attemptTimes=10) is None:
+                                       attemptTimes=30) is None:
             return
 
     # def loadAccountPage(self):

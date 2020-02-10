@@ -53,4 +53,4 @@ def monitor():
 
 def buy(itemId):
     for _account in globals.accountList:
-        Thread(target=_account.buy, args=itemId).start()
+        Thread(target=_account.buy, args=itemId, daemon=True).start()

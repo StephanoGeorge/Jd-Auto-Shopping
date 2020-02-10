@@ -25,13 +25,11 @@ class Account:
         if globals.requestUntilSuccess('添加到购物车', globals.GET, 'https://cart.jd.com/gate.action',
                                        params={'pid': itemId, 'pcount': 1, 'ptype': 1},
                                        sess=self.sess,
-                                       checkFun=lambda resp: ('已成功加入购物车' in resp.text),
                                        logLvl=logging.ERROR,
                                        timeout=3,
                                        sleepTime=0.5,
                                        attemptTimes=10) is None:
             return
-        # TODO: 加入购物车失败检测
         # 结算
         # if globals.requestUntilSuccess(globals.GET, 'https://trade.jd.com/shopping/order/getOrderInfo.action',
         #                                sess=self.sess,

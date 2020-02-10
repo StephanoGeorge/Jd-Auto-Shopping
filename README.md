@@ -10,7 +10,7 @@
 
 # 使用方法
 
-将 `configTemplate.json` 文件更名为 `config.json`, 并按照说明配置
+将 `configTemplate.json` 文件更名为 `config.json`, 并按照说明配置, 运行 `main.py`
 
 ## 获取下单相关的值
 

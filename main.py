@@ -1,24 +1,11 @@
 import logging
 from threading import Thread
 
-import globals
-import cookies
-import login
 import monitor
-import account
-
-logging.basicConfig(format='%(asctime)s %(message)s')
-
-login.login()
-# Thread(target=login.login).start()
-Thread(target=monitor.monitor).start()
-
-
-# Thread(target=refreshPage).start()
-# Thread(target=monitor).start()
-# for i in accountList:
-#     login
-#     loggedInAccountList.append()
-
-
-
+# 设置日志
+logging.getLogger('urllib3').setLevel(logging.WARNING)
+logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.DEBUG)
+# 保持登录
+Thread(target=monitor.keepLogin, daemon=True).start()
+# 监控
+monitor.monitor()

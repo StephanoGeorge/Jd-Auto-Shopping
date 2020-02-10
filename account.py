@@ -58,6 +58,7 @@ class Account:
                     'submitOrderParam.trackID': 'TestTrackId',
                     'submitOrderParam.ignorePriceChange': '0',
                     'submitOrderParam.btSupport': '0',
+                    # https://gia.jd.com/fcf.html
                     'submitOrderParam.eid': self.config['eid'],
                     'submitOrderParam.fp': self.config['fp'],
                     'riskControl': self.config['riskControl'],

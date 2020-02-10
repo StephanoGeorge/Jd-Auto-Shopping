@@ -25,7 +25,7 @@ headers = {
 GET = 'GET'
 POST = 'POST'
 
-with open('./config.json') as file:
+with open(configFileName) as file:
     config = json.load(file)
 
 accountList: List[account.Account] = []
@@ -45,9 +45,11 @@ atexit.register(saveConfig)
 _currAccountIndex = 0
 
 
-def requestUntilSuccess(actionName, method, url, params=None, data=None, headers=None, cookies=None, sess: requests.Session = None,
-                        checkFun=lambda _resp: _resp.status_code == 200,
-                        logLvl=logging.WARNING, timeout=2, sleepTime=0.5, attemptTimes=5):
+def requestUntilSuccess(
+        actionName, method, url, params=None, data=None, headers=None, cookies=None,
+        sess: requests.Session = None,
+        checkFun=lambda _resp: _resp.status_code == 200,
+        logLvl=logging.WARNING, timeout=2, sleepTime=0.5, attemptTimes=5):
     _sleepTime = 0
     _attemptTimes = attemptTimes
     while attemptTimes > 0:
@@ -63,14 +65,15 @@ def requestUntilSuccess(actionName, method, url, params=None, data=None, headers
                     _currAccountIndex = 0
                 else:
                     _currAccountIndex += 1
-            resp = sess.request(method, url, params, data,
-                                headers={**(headers if headers is not None else {}),
-                                         'Host': re.search('https?://(.*?)(/|$)', url).group(1),
-                                         # 'Referer': referer
-                                         },
-                                cookies=cookies,
-                                timeout=timeout,
-                                allow_redirects=False)
+            resp = sess.request(
+                method, url, params, data,
+                headers={**(headers if headers is not None else {}),
+                         'Host': re.search('https?://(.*?)(/|$)', url).group(1),
+                         # 'Referer': referer
+                         },
+                cookies=cookies,
+                timeout=timeout,
+                allow_redirects=False)
             if not checkFun(resp):
                 raise Exception('未通过 {} 检查'.format(str(checkFun)))
             if 300 <= resp.status_code < 400:

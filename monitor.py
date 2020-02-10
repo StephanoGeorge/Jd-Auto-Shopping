@@ -30,13 +30,14 @@ def monitor():
         # startTime = time.time()
         # logging.warning('使用账号: {}'.format(_account.config['phoneNumber']))
         # while True:
-        resp = globals.requestUntilSuccess('监控库存', globals.GET, 'https://c0.3.cn/stocks',
-                                           params=isInStockApiParams,
-                                           headers={'Cookie': None},
-                                           logLvl=logging.DEBUG,
-                                           timeout=1,
-                                           sleepTime=0.3,
-                                           attemptTimes=3)
+        resp = globals.requestUntilSuccess(
+            '监控库存', globals.GET, 'https://c0.3.cn/stocks',
+            params=isInStockApiParams,
+            headers={'Cookie': None},
+            logLvl=logging.DEBUG,
+            timeout=1,
+            sleepTime=0.3,
+            attemptTimes=3)
         if resp is None:
             continue
         for itemId, value in resp.json().items():

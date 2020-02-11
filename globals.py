@@ -49,7 +49,7 @@ _currAccountIndex = 0
 def requestUntilSuccess(
         actionName, method, url, params=None, data=None, headers=None, cookies=None,
         sess: requests.Session = None,
-        checkFun=lambda _resp: _resp.status_code == 200,
+        checkFun=lambda _resp: _resp.status_code == 200, redirect=True,
         logLvl=logging.WARNING, timeout=2, sleepTime=0.5, attemptTimes=5):
     _sleepTime = 0
     _attemptTimes = attemptTimes
@@ -69,9 +69,7 @@ def requestUntilSuccess(
             resp = sess.request(
                 method, url, params, data,
                 headers={**(headers if headers is not None else {}),
-                         'Host': re.search('https?://(.*?)(/|$)', url).group(1),
-                         # 'Referer': referer
-                         },
+                         'Host': re.search('https?://(.*?)(/|$)', url).group(1)},
                 cookies=cookies,
                 timeout=timeout,
                 allow_redirects=False)
@@ -79,9 +77,12 @@ def requestUntilSuccess(
                 raise Exception('未通过 {} 检查'.format(str(checkFun)))
             if 'Location' in resp.headers:
                 logging.log(logLvl, '从 {} 重定向至 {}'.format(url, resp.headers['Location']))
-                url = resp.headers['Location']
-                # headers['Referer'] =
-                continue
+                if redirect:
+                    url = resp.headers['Location']
+                    # headers['Referer'] =
+                    continue
+                else:
+                    return resp
             if 400 <= resp.status_code < 500:
                 logging.log(logLvl, '\n\t'.join(('{} 失败'.format(actionName), str(resp.status_code))))
             logging.log(logLvl - 10, '{} 成功'.format(actionName))

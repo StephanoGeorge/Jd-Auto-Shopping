@@ -1,4 +1,6 @@
 import logging
+import os
+
 import time
 from threading import Thread
 
@@ -11,17 +13,15 @@ isInStockApiParams = {
 }
 
 
-#  Test
-def keepLogin():
-    while True:
-        for _account in globals.accountList:
-            if _account.checkLogin():
-                logging.debug('{} 已登录'.format(_account.phoneNumber))
-            else:
-                logging.error('{} 未登录'.format(_account.phoneNumber))
+def checkLogin():
+    for _account in globals.accountList:
+        if _account.checkLogin():
+            logging.debug('{} 已登录'.format(_account.phoneNumber))
         else:
-            logging.debug('所有账户都已登录')
-        time.sleep(60 * 20)
+            logging.error('{} 未登录'.format(_account.phoneNumber))
+            os._exit()
+    else:
+        logging.debug('所有账户都已登录')
 
 
 def monitor():

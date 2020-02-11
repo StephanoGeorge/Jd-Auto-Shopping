@@ -6,6 +6,6 @@ import monitor
 logging.getLogger('urllib3').setLevel(logging.WARNING)
 logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.DEBUG)
 # 保持登录
-Thread(target=monitor.keepLogin, daemon=True).start()
+monitor.checkLogin()
 # 监控
 monitor.monitor()

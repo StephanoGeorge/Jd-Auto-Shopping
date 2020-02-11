@@ -1,16 +1,24 @@
 import logging
 import os
 
-import time
 from threading import Thread
 
 import globals
 
-isInStockApiParams = {
-    'skuIds': ','.join([itemId for itemId, _ in globals.config['items'].items()]),
-    'area': globals.config['area'],
-    'type': 'getstocks',
-}
+isInStockApiParams = []
+_count = 100
+_currIndex = 0
+while True:
+    _currItems = list(globals.config['items'].keys())[_currIndex:_currIndex + _count]
+    if len(_currItems) != 0:
+        isInStockApiParams.append({
+            'skuIds': ','.join([itemId for itemId in _currItems]),
+            'area': globals.config['area'],
+            'type': 'getstocks'})
+        _currIndex += _count
+        continue
+    else:
+        break
 
 
 def checkLogin():
@@ -27,28 +35,26 @@ def checkLogin():
 def monitor():
     logging.debug('开始监控库存')
     while True:
-        # startTime = time.time()
-        # logging.warning('使用账号: {}'.format(_account.config['phoneNumber']))
-        # while True:
-        resp = globals.requestUntilSuccess(
-            '监控库存', globals.GET, 'https://c0.3.cn/stocks',
-            params=isInStockApiParams,
-            headers={'Cookie': None},
-            logLvl=logging.DEBUG,
-            timeout=1.5,
-            sleepTime=0,
-            attemptTimes=3)
-        if resp is None:
-            continue
-        for itemId, value in resp.json().items():
-            if value['skuState'] == 0:
-                # isInStockApiParams['skuIds'] = re.sub('{},?'.format(itemId), '', isInStockApiParams['skuIds'])
-                globals.config['items'][itemId] = False
+        for isInStockApiParam in isInStockApiParams:
+            resp = globals.requestUntilSuccess(
+                '监控库存', globals.GET, 'https://c0.3.cn/stocks',
+                params=isInStockApiParam,
+                headers={'Cookie': None},
+                logLvl=logging.DEBUG,
+                timeout=1.5,
+                sleepTime=0,
+                attemptTimes=3)
+            if resp is None:
                 continue
-            if value['StockState'] in (33, 40):
-                logging.warning('{} 有货'.format(itemId))
-                # Thread(target=buy, args=itemId).start()
-                buy(itemId)
+            for itemId, value in resp.json().items():
+                if value['skuState'] == 0:
+                    # isInStockApiParams['skuIds'] = re.sub('{},?'.format(itemId), '', isInStockApiParams['skuIds'])
+                    globals.config['items'][itemId] = False
+                    continue
+                if value['StockState'] in (33, 40):
+                    logging.warning('{} 有货'.format(itemId))
+                    # Thread(target=buy, args=itemId).start()
+                    buy(itemId)
 
 
 def buy(itemId):

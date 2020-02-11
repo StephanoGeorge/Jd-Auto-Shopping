@@ -34,29 +34,34 @@ def checkLogin():
 
 def monitor():
     logging.debug('开始监控库存')
+    for isInStockApiParam in isInStockApiParams:
+        Thread(target=_monitor, args=(isInStockApiParam,)).start()
+
+
+def _monitor(isInStockApiParam):
     while True:
-        for isInStockApiParam in isInStockApiParams:
-            resp = globals.requestUntilSuccess(
-                '监控库存', globals.GET, 'https://c0.3.cn/stocks',
-                params=isInStockApiParam,
-                headers={'Cookie': None},
-                logLvl=logging.DEBUG,
-                timeout=1.5,
-                sleepTime=0,
-                attemptTimes=3)
-            if resp is None:
+        resp = globals.requestUntilSuccess(
+            '监控库存', globals.GET, 'https://c0.3.cn/stocks',
+            params=isInStockApiParam,
+            headers={'Cookie': None},
+            # logLvl=logging.DEBUG,
+            timeout=1.5,
+            sleepTime=0,
+            attemptTimes=3)
+        print(isInStockApiParam['skuIds'][:15])
+        if resp is None:
+            continue
+        for itemId, value in resp.json().items():
+            if value['skuState'] == 0:
+                # isInStockApiParams['skuIds'] = re.sub('{},?'.format(itemId), '', isInStockApiParams['skuIds'])
+                globals.config['items'][itemId] = False
                 continue
-            for itemId, value in resp.json().items():
-                if value['skuState'] == 0:
-                    # isInStockApiParams['skuIds'] = re.sub('{},?'.format(itemId), '', isInStockApiParams['skuIds'])
-                    globals.config['items'][itemId] = False
-                    continue
-                if value['StockState'] in (33, 40):
-                    logging.warning('{} 有货'.format(itemId))
-                    # Thread(target=buy, args=itemId).start()
-                    buy(itemId)
+            if value['StockState'] in (33, 40):
+                logging.warning('{} 有货'.format(itemId))
+                # Thread(target=buy, args=(itemId,)).start()
+                buy(itemId)
 
 
 def buy(itemId):
     for _account in globals.accountList:
-        Thread(target=_account.buy(itemId), daemon=True).start()
+        Thread(target=_account.buy, args=(itemId,)).start()

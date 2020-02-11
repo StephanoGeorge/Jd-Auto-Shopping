@@ -37,7 +37,7 @@ class Account:
                     logLvl=logging.ERROR,
                     timeout=3,
                     sleepTime=0.5,
-                    attemptTimes=10) is None:
+                    attemptTimes=6) is None:
                 return
 
             # 结算
@@ -46,7 +46,7 @@ class Account:
                 sess=self.sess,
                 timeout=3,
                 sleepTime=0.5,
-                attemptTimes=30)
+                attemptTimes=6)
             if resp is None:
                 return
             self.config['riskControl'] = re.search('riskControl" value="(.+?)"', resp.text).group(1)

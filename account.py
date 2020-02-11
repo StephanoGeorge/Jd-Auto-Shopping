@@ -28,8 +28,8 @@ class Account:
     def buy(self, itemId):
         if itemId in self.alreadyPurchased:
             return
-        while self.isBuying:
-            pass
+        if self.isBuying:
+            return
         self.isBuying = True
         try:
             # 添加到购物车

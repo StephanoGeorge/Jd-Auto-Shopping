@@ -14,7 +14,6 @@ class Account:
         self.sess.cookies.update(_config['cookies'])
         self.sess.headers.update(globals.headers)
         self.isBuying = False
-        self.alreadyPurchased = []
 
     def checkLogin(self):
         return globals.requestUntilSuccess(
@@ -26,8 +25,6 @@ class Account:
             attemptTimes=5).json()['Identity']['IsAuthenticated']
 
     def buy(self, itemId):
-        if itemId in self.alreadyPurchased:
-            return
         if self.isBuying:
             return
         self.isBuying = True
@@ -81,6 +78,5 @@ class Account:
                     sleepTime=0.5,
                     attemptTimes=5) is None:
                 return
-            self.alreadyPurchased.append(itemId)
         finally:
             self.isBuying = False

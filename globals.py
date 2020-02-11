@@ -50,12 +50,12 @@ def requestUntilSuccess(
         actionName, method, url, params=None, data=None, headers=None, cookies=None,
         sess: requests.Session = None,
         checkFun=lambda _resp: _resp.status_code == 200, redirect=True,
-        logLvl=logging.WARNING, timeout=2, sleepTime=0.5, attemptTimes=5):
-    _sleepTime = 0
-    _attemptTimes = attemptTimes
+        logLvl=logging.WARNING, timeout=2):
+    sleepTime = 0
+    attemptTimes = 10
     while attemptTimes > 0:
         attemptTimes -= 1
-        _sleepTime += sleepTime
+        sleepTime += 0.5
         resp = None
         try:
             # 使用账户列表中的 session
@@ -73,8 +73,6 @@ def requestUntilSuccess(
                 cookies=cookies,
                 timeout=timeout,
                 allow_redirects=False)
-            if not checkFun(resp):
-                raise Exception('未通过 {} 检查'.format(str(checkFun)))
             if 'Location' in resp.headers:
                 logging.log(logLvl, '从 {} 重定向至 {}'.format(url, resp.headers['Location']))
                 if redirect:
@@ -84,8 +82,18 @@ def requestUntilSuccess(
                 else:
                     return resp
             if 400 <= resp.status_code < 500:
-                logging.log(logLvl, '\n\t'.join(('{} 失败'.format(actionName), str(resp.status_code))))
+                logging.log(logLvl, '\n\t'.join(('{} 返回客户端错误'.format(actionName), str(resp.status_code))))
+                attemptTimes -= 3
+                time.sleep(sleepTime)
+                continue
+            if not checkFun(resp):
+                logging.log(logLvl, '\n\t'.join(('{} 未通过检查'.format(actionName), str(resp.status_code),
+                                                 str(resp.headers), resp.text)))
+                attemptTimes -= 3
+                time.sleep(sleepTime)
+                continue
             logging.log(logLvl - 10, '{} 成功'.format(actionName))
+            return resp
         except Timeout:
             logging.log(logLvl, '{} 超时'.format(actionName))
             continue
@@ -99,9 +107,7 @@ def requestUntilSuccess(
                 logging.log(logLvl, '\n\t'.join(('{} 失败'.format(actionName), str(resp.status_code),
                                                  str(resp.headers), resp.text)))
             logging.exception(e)
-            time.sleep(_sleepTime)
             continue
-        return resp
     else:
-        logging.log(logLvl, '{} 超过尝试次数 ({})'.format(actionName, _attemptTimes))
+        logging.log(logLvl, '{} 超过尝试次数'.format(actionName))
         return None

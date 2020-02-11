@@ -44,11 +44,10 @@ def _monitor(isInStockApiParam):
             '监控库存', globals.GET, 'https://c0.3.cn/stocks',
             params=isInStockApiParam,
             headers={'Cookie': None},
-            # logLvl=logging.DEBUG,
+            logLvl=logging.DEBUG,
             timeout=1.5,
             sleepTime=0,
             attemptTimes=3)
-        print(isInStockApiParam['skuIds'][:15])
         if resp is None:
             continue
         for itemId, value in resp.json().items():

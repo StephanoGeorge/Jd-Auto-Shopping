@@ -37,7 +37,7 @@ class Account:
                     logLvl=logging.ERROR,
                     timeout=3,
                     sleepTime=0.5,
-                    attemptTimes=6) is None:
+                    attemptTimes=3) is None:
                 return
 
             # 结算
@@ -46,7 +46,7 @@ class Account:
                 sess=self.sess,
                 timeout=3,
                 sleepTime=0.5,
-                attemptTimes=6)
+                attemptTimes=3)
             if resp is None:
                 return
             self.config['riskControl'] = re.search('riskControl" value="(.+?)"', resp.text).group(1)
@@ -72,11 +72,11 @@ class Account:
                         'submitOrderParam.isBestCoupon': 1,  #
                         'submitOrderParam.needCheck': 1,  #
                     },
-                    checkFun=lambda resp: resp.json()['success'],
+                    checkFun=lambda _resp: _resp.json()['resultCode'] in (60123, 600157, 600158),
                     logLvl=logging.ERROR,
                     timeout=3,
                     sleepTime=0.5,
-                    attemptTimes=5) is None:
+                    attemptTimes=3) is None:
                 return
         finally:
             self.isBuying = False

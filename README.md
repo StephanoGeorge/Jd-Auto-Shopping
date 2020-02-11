@@ -20,8 +20,7 @@
 let eid = $('#eid').val();
 let fp = $('#fp').val();
 let trackId = getTakId();
-let riskControl = $('#riskControl').val();
-console.log(`"eid": "${eid}",\n"fp": "${fp}",\n"riskControl": "${riskControl}",\n"trackId": "${trackId}"\n`);
+console.log(`"eid": "${eid}",\n"fp": "${fp}",\n"trackId": "${trackId}"\n`);
 ```
 
 ## 获取 cookies

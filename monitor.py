@@ -45,9 +45,7 @@ def _monitor(isInStockApiParam):
             params=isInStockApiParam,
             headers={'Cookie': None},
             logLvl=logging.DEBUG,
-            timeout=1.5,
-            sleepTime=0,
-            attemptTimes=3)
+            timeout=1.5)
         if resp is None:
             continue
         for itemId, value in resp.json().items():

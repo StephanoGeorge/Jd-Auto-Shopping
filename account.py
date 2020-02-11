@@ -15,6 +15,7 @@ class Account:
         self.sess.headers.update(globals.headers)
         self.isBuying = False
 
+    # 使用 APP 的数据保持登录
     def checkLogin(self):
         return globals.requestUntilSuccess(
             '检测登录', globals.GET,
@@ -31,7 +32,7 @@ class Account:
             if globals.requestUntilSuccess(
                     '添加到购物车', globals.GET, 'https://cart.jd.com/gate.action',
                     params={'pid': itemId, 'pcount': int(random() * 5) + 1, 'ptype': 1},
-                    sess=self.sess, logLvl=logging.ERROR, timeout=3) is None:
+                    sess=self.sess, redirect=False, logLvl=logging.ERROR, timeout=3) is None:
                 return
 
             # 结算

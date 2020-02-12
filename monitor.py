@@ -1,5 +1,4 @@
 import logging
-import os
 import time
 
 from threading import Thread
@@ -26,28 +25,27 @@ def checkLogin():
     while True:
         for _account in globals.accountList:
             if _account.checkLogin():
-                logging.debug('{} 已登录'.format(_account.id))
+                logging.info('{} 已登录'.format(_account.id))
             else:
                 logging.error('{} 未登录'.format(_account.id))
         else:
-            logging.debug('所有账户都已登录')
+            logging.info('所有账户都已登录')
         time.sleep(20 * 60)
 
 
 def monitor():
-    logging.debug('开始监控库存')
+    logging.info('开始监控库存')
     for isInStockApiParam in isInStockApiParams:
         Thread(target=_monitor, args=(isInStockApiParam,)).start()
 
 
 def _monitor(isInStockApiParam):
     while True:
-        resp = globals.request(
-            '监控库存', globals.GET, 'https://c0.3.cn/stocks',
-            params=isInStockApiParam,
-            headers={'Cookie': None},
-            logLvl=logging.DEBUG,
-            timeout=1.5)
+        resp = globals.request('监控库存', globals.GET, 'https://c0.3.cn/stocks',
+                               params=isInStockApiParam, headers={'cookie': None},
+                               logLvl={globals.successLogLvl: logging.DEBUG,
+                                       globals.timeoutLogLvl: logging.DEBUG},
+                               timeout=1.5)
         if resp is None:
             continue
         for itemId, value in resp.json().items():

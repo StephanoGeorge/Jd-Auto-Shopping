@@ -32,13 +32,14 @@ class Account:
             if globals.request(
                     '添加到购物车', globals.GET, 'https://cart.jd.com/gate.action',
                     params={'pid': itemId, 'pcount': int(random() * 5) + 1, 'ptype': 1},
-                    sess=self.sess, redirect=False, logLvl=logging.ERROR, timeout=3) is None:
+                    sess=self.sess, redirect=False,
+                    logLvl={globals.defaultLogLvl: logging.ERROR}, timeout=3) is None:
                 return
 
             # 结算
             resp = globals.request(
                 '结算', globals.GET, 'https://trade.jd.com/shopping/order/getOrderInfo.action',
-                sess=self.sess, timeout=3)
+                sess=self.sess, logLvl={globals.defaultLogLvl: logging.ERROR}, timeout=3)
             if resp is None:
                 return
             self.config['riskControl'] = re.search('riskControl" value="(.+?)"', resp.text).group(1)
@@ -65,8 +66,7 @@ class Account:
                         'submitOrderParam.needCheck': 1,  #
                     },
                     checkFun=lambda _resp: _resp.json()['success'],
-                    logLvl=logging.ERROR,
-                    timeout=3) is None:
+                    logLvl={globals.defaultLogLvl: logging.ERROR}, timeout=3) is None:
                 return
         finally:
             self.isBuying = False

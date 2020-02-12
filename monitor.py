@@ -1,5 +1,6 @@
 import logging
 import os
+import time
 
 from threading import Thread
 
@@ -22,14 +23,15 @@ while True:
 
 
 def checkLogin():
-    for _account in globals.accountList:
-        if _account.checkLogin():
-            logging.debug('{} 已登录'.format(_account.phoneNumber))
+    while True:
+        for _account in globals.accountList:
+            if _account.checkLogin():
+                logging.debug('{} 已登录'.format(_account.id))
+            else:
+                logging.error('{} 未登录'.format(_account.id))
         else:
-            logging.error('{} 未登录'.format(_account.phoneNumber))
-            os._exit()
-    else:
-        logging.debug('所有账户都已登录')
+            logging.debug('所有账户都已登录')
+        time.sleep(20 * 60)
 
 
 def monitor():

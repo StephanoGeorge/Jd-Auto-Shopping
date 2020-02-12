@@ -43,8 +43,9 @@ def _monitor(isInStockApiParam):
     while True:
         resp = globals.request('监控库存', globals.GET, 'https://c0.3.cn/stocks',
                                params=isInStockApiParam, headers={'cookie': None},
-                               logLvl={globals.successLogLvl: logging.DEBUG,
-                                       globals.timeoutLogLvl: logging.DEBUG},
+                               logLvl={globals.successLogLvl: logging.DEBUG,  # 请求成功的日志等级
+                                       globals.timeoutLogLvl: logging.DEBUG,  # 请求超时的日志等级
+                                       globals.TooManyFailureLogLvl: logging.DEBUG},  # 过多失败的日志等级
                                timeout=1.5)
         if resp is None:
             continue

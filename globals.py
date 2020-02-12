@@ -48,6 +48,7 @@ _currAccountIndex = 0
 defaultLogLvl = 0
 successLogLvl = 1
 timeoutLogLvl = 2
+TooManyFailureLogLvl = 3
 
 
 def request(
@@ -58,6 +59,7 @@ def request(
     logLvl = {defaultLogLvl: logging.WARNING,
               successLogLvl: logging.INFO,
               timeoutLogLvl: logging.WARNING,
+              TooManyFailureLogLvl: logging.WARNING,
               **logLvl}
     sleepTime = 0
     attemptTimes = 10
@@ -103,11 +105,11 @@ def request(
                 continue
             logging.log(logLvl[successLogLvl] - 10, '{} 成功'.format(actionName))
             return resp
-        except Timeout:
+        except (Timeout, socket.timeout):
             logging.log(logLvl[timeoutLogLvl], '{} 超时'.format(actionName))
             continue
         except TooManyRedirects:
-            logging.log(logLvl[defaultLogLvl], '{} 重定向过多'.format(actionName))
+            logging.log(logLvl[defaultLogLvl], '{} 重定向次数过多'.format(actionName))
             return None
         except (Exception, IOError) as e:
             if resp is None:
@@ -118,5 +120,5 @@ def request(
             logging.exception(e)
             continue
     else:
-        logging.log(logLvl[defaultLogLvl], '{} 超过尝试次数'.format(actionName))
+        logging.log(logLvl[TooManyFailureLogLvl], '{} 失败次数过多'.format(actionName))
         return None

@@ -26,3 +26,9 @@ console.log(`"eid": "${eid}",\n"fp": "${fp}",\n"trackId": "${trackId}"\n`);
 ## 获取 cookies
 
 在任意京东页面打开开发者工具, 刷新, 查看网络请求, 过滤 `passport.jd.com/loginservice.aspx`, 将请求 cookie 复制至配置文件
+
+# 说明
+
+- 监控库存正常不会输出
+- cookies 24h 过期
+- 下单后自行支付

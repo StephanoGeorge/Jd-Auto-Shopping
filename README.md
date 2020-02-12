@@ -36,3 +36,4 @@ console.log(`"eid": "${eid}",\n"fp": "${fp}",\n"trackId": "${trackId}"\n`);
 - 监控库存正常或超时都不会输出
 - cookies 24h 过期
 - 下单后自行支付
+- 停止程序后再编辑 `config.json`

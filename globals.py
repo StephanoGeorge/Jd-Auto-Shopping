@@ -47,7 +47,7 @@ atexit.register(saveConfig)
 _currAccountIndex = 0
 
 
-def requestUntilSuccess(
+def request(
         actionName, method, url, params=None, data=None, headers=None, cookies=None,
         sess: requests.Session = None,
         checkFun=lambda _resp: _resp.status_code == 200, redirect=True,
@@ -75,7 +75,7 @@ def requestUntilSuccess(
                 timeout=timeout,
                 allow_redirects=False)
             if 'Location' in resp.headers:
-                logging.log(logLvl, '从 {} 重定向至 {}'.format(url, resp.headers['Location']))
+                logging.log(logLvl - 10, '从 {} 重定向至 {}'.format(url, resp.headers['Location']))
                 if redirect:
                     url = resp.headers['Location']
                     # headers['Referer'] =

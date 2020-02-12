@@ -17,7 +17,7 @@ class Account:
 
     # 使用 APP 的数据保持登录
     def checkLogin(self):
-        return globals.requestUntilSuccess(
+        return globals.request(
             '检测登录', globals.GET,
             'https://passport.jd.com/loginservice.aspx?method=Login',
             headers={'Referer': 'https://www.jd.com/'},
@@ -29,14 +29,14 @@ class Account:
         self.isBuying = True
         try:
             # 添加到购物车
-            if globals.requestUntilSuccess(
+            if globals.request(
                     '添加到购物车', globals.GET, 'https://cart.jd.com/gate.action',
                     params={'pid': itemId, 'pcount': int(random() * 5) + 1, 'ptype': 1},
                     sess=self.sess, redirect=False, logLvl=logging.ERROR, timeout=3) is None:
                 return
 
             # 结算
-            resp = globals.requestUntilSuccess(
+            resp = globals.request(
                 '结算', globals.GET, 'https://trade.jd.com/shopping/order/getOrderInfo.action',
                 sess=self.sess, timeout=3)
             if resp is None:
@@ -44,7 +44,7 @@ class Account:
             self.config['riskControl'] = re.search('riskControl" value="(.+?)"', resp.text).group(1)
 
             # 提交订单
-            if globals.requestUntilSuccess(
+            if globals.request(
                     '提交订单', globals.POST, 'https://trade.jd.com/shopping/order/submitOrder.action',
                     headers={'Origin': 'https://trade.jd.com',
                              'Referer': 'https://trade.jd.com/shopping/order/getOrderInfo.action'},

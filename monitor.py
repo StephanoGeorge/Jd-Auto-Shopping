@@ -42,7 +42,7 @@ def monitor():
 
 def _monitor(isInStockApiParam):
     while True:
-        resp = globals.requestUntilSuccess(
+        resp = globals.request(
             '监控库存', globals.GET, 'https://c0.3.cn/stocks',
             params=isInStockApiParam,
             headers={'Cookie': None},

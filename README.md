@@ -14,7 +14,7 @@
 
 ## 获取下单相关的值
 
-向购物车中加入任意商品，点击去结算，在订单结算页面打开开发者工具，在 Console 中执行以下代码, 将输出复制至配置文件:
+向购物车中加入任意商品, 点击去结算, 在订单结算页面打开开发者工具, 在 Console 中执行以下代码, 将输出复制至配置文件:
 
 ```js
 let eid = $('#eid').val();
@@ -26,6 +26,10 @@ console.log(`"eid": "${eid}",\n"fp": "${fp}",\n"trackId": "${trackId}"\n`);
 ## 获取 cookies
 
 在任意京东页面打开开发者工具, 刷新, 查看网络请求, 过滤 `passport.jd.com/loginservice.aspx`, 将请求 cookie 复制至配置文件
+
+## 测试下单
+
+按照说明编辑 `testOrder.py` 文件, 并运行它
 
 # 说明
 

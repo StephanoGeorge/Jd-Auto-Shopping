@@ -28,8 +28,6 @@ def checkLogin():
                 logging.info('{} 已登录'.format(_account.id))
             else:
                 logging.error('{} 未登录'.format(_account.id))
-        else:
-            logging.info('所有账户都已登录')
         time.sleep(20 * 60)
 
 

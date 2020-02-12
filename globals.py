@@ -31,14 +31,14 @@ with open(configFileName) as file:
     config = json.load(file)
 
 accountList: List[account.Account] = []
-for _phoneNumber, _config in config['accounts'].items():
-    accountList.append(account.Account(_phoneNumber, _config))
+for _id, _config in config['accounts'].items():
+    accountList.append(account.Account(_id, _config))
 
 
 def saveConfig():
     with open(configFileName, 'w') as _file:
         for _account in accountList:
-            config['accounts'][_account.phoneNumber]['cookies'] = _account.sess.cookies.get_dict()
+            config['accounts'][_account.id]['cookies'] = _account.sess.cookies.get_dict()
         json.dump(config, _file)
 
 

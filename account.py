@@ -7,8 +7,8 @@ import requests
 
 
 class Account:
-    def __init__(self, phoneNumber, _config):
-        self.phoneNumber = phoneNumber
+    def __init__(self, id, _config):
+        self.id = id
         self.config = _config['config']
         self.sess = requests.Session()
         self.sess.cookies.update(_config['cookies'])

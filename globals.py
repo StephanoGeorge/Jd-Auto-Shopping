@@ -101,7 +101,7 @@ def requestUntilSuccess(
         except TooManyRedirects:
             logging.log(logLvl, '{} 重定向过多'.format(actionName))
             return None
-        except (Exception, IOError, socket.timeout) as e:
+        except (Exception, IOError) as e:
             if resp is None:
                 logging.log(logLvl, '{} 失败, 无 Response'.format(actionName))
             else:

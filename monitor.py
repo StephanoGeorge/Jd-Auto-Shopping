@@ -1,4 +1,6 @@
 import logging
+from json import JSONDecodeError
+
 import time
 
 from threading import Thread
@@ -47,15 +49,18 @@ def _monitor(isInStockApiParam):
                                timeout=1.5)
         if resp is None:
             continue
-        for itemId, value in resp.json().items():
-            if value['skuState'] == 0:
-                # isInStockApiParams['skuIds'] = re.sub('{},?'.format(itemId), '', isInStockApiParams['skuIds'])
-                globals.config['items'][itemId] = False
-                continue
-            if value['StockState'] in (33, 40):
-                logging.warning('{} 有货'.format(itemId))
-                # Thread(target=buy, args=(itemId,)).start()
-                buy(itemId)
+        try:
+            for itemId, value in resp.json().items():
+                if value['skuState'] == 0:
+                    # isInStockApiParams['skuIds'] = re.sub('{},?'.format(itemId), '', isInStockApiParams['skuIds'])
+                    globals.config['items'][itemId] = False
+                    continue
+                if value['StockState'] in (33, 40):
+                    logging.warning('{} 有货'.format(itemId))
+                    # Thread(target=buy, args=(itemId,)).start()
+                    buy(itemId)
+        except JSONDecodeError:
+            continue
 
 
 def buy(itemId):

@@ -60,7 +60,7 @@ def request(
         checkFun=lambda _resp: _resp.status_code == 200, redirect=True,
         logLvl={}, timeout=2):
     logLvl = {defaultLogLvl: logging.WARNING,
-              successLogLvl: logging.INFO,
+              successLogLvl: logging.DEBUG,
               timeoutLogLvl: logging.WARNING,
               TooManyFailureLogLvl: logging.WARNING,
               **logLvl}

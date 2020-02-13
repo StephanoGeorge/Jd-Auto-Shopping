@@ -96,7 +96,7 @@ def request(
                     return resp
             if 400 <= resp.status_code < 500:
                 logging.log(logLvl[defaultLogLvl],
-                            '\n\t'.join(('{} 返回客户端错误'.format(actionName), str(resp.status_code))))
+                            '\n\t'.join(('{} 发生客户端错误'.format(actionName), str(resp.status_code))))
                 attemptTimes -= 3
                 time.sleep(sleepTime)
                 continue
@@ -108,13 +108,13 @@ def request(
                 continue
             logging.log(logLvl[successLogLvl], '{} 成功'.format(actionName))
             return resp
-        except (Timeout, socket.timeout):
+        except Timeout:
             logging.log(logLvl[timeoutLogLvl], '{} 超时'.format(actionName))
             continue
         except TooManyRedirects:
             logging.log(logLvl[defaultLogLvl], '{} 重定向次数过多'.format(actionName))
             return None
-        except (Exception, IOError) as e:
+        except Exception as e:
             if resp is None:
                 logging.log(logLvl[defaultLogLvl], '{} 失败, 无 Response'.format(actionName))
             else:

@@ -106,7 +106,7 @@ def request(
                 attemptTimes -= 3
                 time.sleep(sleepTime)
                 continue
-            logging.log(logLvl[successLogLvl] - 10, '{} 成功'.format(actionName))
+            logging.log(logLvl[successLogLvl], '{} 成功'.format(actionName))
             return resp
         except (Timeout, socket.timeout):
             logging.log(logLvl[timeoutLogLvl], '{} 超时'.format(actionName))

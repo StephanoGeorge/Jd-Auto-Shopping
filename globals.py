@@ -29,9 +29,12 @@ POST = 'POST'
 
 with open(configFileName) as file:
     config = json.load(file)
-
 accountList: List[account.Account] = []
 for _id, _config in config['accounts'].items():
+    # remove unASCII char
+    for _key, _value in tuple(_config['cookies'].items()):
+        if re.search(r'[^\u0000-\u007F]', _value) is not None:
+            del _config['cookies'][_key]
     accountList.append(account.Account(_id, _config))
 
 

@@ -26,7 +26,10 @@ while True:
 def checkLogin():
     while True:
         for _account in glb.accountList:
-            if _account.checkLogin():
+            resp = _account.checkLogin()
+            if resp is None:
+                continue
+            if resp.json()['Identity']['IsAuthenticated']:
                 logging.info('{} 已登录'.format(_account.id))
             else:
                 logging.error('{} 未登录'.format(_account.id))

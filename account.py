@@ -32,7 +32,7 @@ class Account:
             # 添加到购物车
             if glb.request(
                     '添加到购物车({})'.format(', '.join((self.id, itemId))), glb.GET, 'https://cart.jd.com/gate.action',
-                    params={'pid': itemId, 'pcount': int(random() * 5) + 1, 'ptype': 1},
+                    params={'pid': itemId, 'pcount': 1, 'ptype': 1},
                     sess=self.sess, redirect=False,
                     logLvl={glb.defaultLogLvl: logging.ERROR,
                             glb.redirectLogLvl: logging.DEBUG}, timeout=3) is None:

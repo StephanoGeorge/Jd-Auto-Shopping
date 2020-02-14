@@ -19,10 +19,9 @@ class Account:
     # TODO: 使用 APP 的数据保持登录
     def checkLogin(self):
         return glb.request(
-            '检测登录', glb.GET,
-            'https://passport.jd.com/loginservice.aspx?method=Login',
+            '检测登录', glb.GET, 'https://passport.jd.com/loginservice.aspx?method=Login',
             headers={'Referer': 'https://www.jd.com/'},
-            sess=self.sess).json()['Identity']['IsAuthenticated']
+            sess=self.sess, logLvl={glb.successLogLvl: logging.DEBUG})
 
     def buy(self, itemId):
         while self.isBuying:
@@ -41,7 +40,7 @@ class Account:
 
             def getOrderInfoCheck(_resp, args):
                 if re.search('showCheckCode" value="(.+)"', resp.text).group(1) == 'true':
-                    logging.error('结算({}) 需要通过图形验证码'.format(', '.join((args[0].id, itemId))))
+                    logging.warning('结算({}) 需要通过图形验证码'.format(', '.join((args[0].id, itemId))))
                     time.sleep(1)
                     return True
 

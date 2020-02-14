@@ -1,8 +1,9 @@
 import logging
 import re
+import time
 from random import random
 
-import globals
+import glb
 import requests
 
 
@@ -12,41 +13,65 @@ class Account:
         self.config = _config['config']
         self.sess = requests.Session()
         self.sess.cookies.update(_config['cookies'])
-        self.sess.headers.update(globals.headers)
+        self.sess.headers.update(glb.reqHeaders)
         self.isBuying = False
 
-    # 使用 APP 的数据保持登录
+    # TODO: 使用 APP 的数据保持登录
     def checkLogin(self):
-        return globals.request(
-            '检测登录', globals.GET,
+        return glb.request(
+            '检测登录', glb.GET,
             'https://passport.jd.com/loginservice.aspx?method=Login',
             headers={'Referer': 'https://www.jd.com/'},
             sess=self.sess).json()['Identity']['IsAuthenticated']
 
     def buy(self, itemId):
-        if self.isBuying:
-            return
+        while self.isBuying:
+            if not glb.items[itemId]:
+                return
         self.isBuying = True
         try:
             # 添加到购物车
-            if globals.request(
-                    '添加到购物车', globals.GET, 'https://cart.jd.com/gate.action',
+            if glb.request(
+                    '添加到购物车({})'.format(', '.join((self.id, itemId))), glb.GET, 'https://cart.jd.com/gate.action',
                     params={'pid': itemId, 'pcount': int(random() * 5) + 1, 'ptype': 1},
                     sess=self.sess, redirect=False,
-                    logLvl={globals.defaultLogLvl: logging.ERROR}, timeout=3) is None:
+                    logLvl={glb.defaultLogLvl: logging.ERROR,
+                            glb.redirectLogLvl: logging.DEBUG}, timeout=3) is None:
                 return
 
+            def getOrderInfoCheck(_resp, args):
+                if re.search('showCheckCode" value="(.+)"', resp.text).group(1) == 'true':
+                    logging.error('结算({}) 需要通过图形验证码'.format(', '.join((args[0].id, itemId))))
+                    time.sleep(1)
+                    return True
+
             # 结算
-            resp = globals.request(
-                '结算', globals.GET, 'https://trade.jd.com/shopping/order/getOrderInfo.action',
-                sess=self.sess, logLvl={globals.defaultLogLvl: logging.ERROR}, timeout=3)
+            resp = glb.request(
+                '结算({})'.format(', '.join((self.id, itemId))), glb.GET,
+                'https://trade.jd.com/shopping/order/getOrderInfo.action',
+                sess=self.sess, checkFuc=getOrderInfoCheck,
+                logLvl={glb.defaultLogLvl: logging.ERROR}, timeout=3)
             if resp is None:
                 return
             self.config['riskControl'] = re.search('riskControl" value="(.+?)"', resp.text).group(1)
+            logging.info('riskControl: {}'.format(self.config['riskControl']))
+
+            def submitOrderCheck(_resp, args):
+                if _resp.json()['resultCode'] in (60123, 600157, 600158):
+                    logging.error('提交订单({}) 失败({})'.format(', '.join((args[0].id, itemId)), _resp.json['message']))
+                    return False
+                elif _resp.json()['resultCode'] is 60017:
+                    logging.error('提交订单({}) 请求过于频繁'.format(', '.join((args[0].id, itemId))))
+                    time.sleep(5)
+                    return True
+                elif _resp.json()['success'] is True:
+                    logging.error('提交订单({}) 成功'.format(', '.join((args[0].id, itemId))))
+                    return False
 
             # 提交订单
-            if globals.request(
-                    '提交订单', globals.POST, 'https://trade.jd.com/shopping/order/submitOrder.action',
+            if glb.request(
+                    '提交订单({})'.format(', '.join((self.id, itemId))), glb.POST,
+                    'https://trade.jd.com/shopping/order/submitOrder.action',
                     headers={'Origin': 'https://trade.jd.com',
                              'Referer': 'https://trade.jd.com/shopping/order/getOrderInfo.action'},
                     data={
@@ -65,8 +90,8 @@ class Account:
                         'submitOrderParam.isBestCoupon': 1,  #
                         'submitOrderParam.needCheck': 1,  #
                     },
-                    checkFun=lambda _resp: _resp.json()['success'],
-                    logLvl={globals.defaultLogLvl: logging.ERROR}, timeout=3) is None:
+                    checkFuc=submitOrderCheck, args=(self,),
+                    logLvl={glb.defaultLogLvl: logging.ERROR}, timeout=3) is None:
                 return
         finally:
             self.isBuying = False

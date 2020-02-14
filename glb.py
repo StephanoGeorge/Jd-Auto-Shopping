@@ -1,7 +1,6 @@
 import json
 import logging
 import re
-import socket
 
 import atexit
 import time
@@ -11,8 +10,18 @@ from requests import Timeout, TooManyRedirects
 
 import account
 
+# 设置日志
+logging.getLogger('urllib3').setLevel(logging.FATAL)
+logging.getLogger().setLevel(logging.FATAL)
+handler = logging.StreamHandler()
+handler.setLevel(logging.INFO)
+handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s %(message)s'))
+mainLogger = logging.getLogger('main')
+mainLogger.addHandler(handler)
+# logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
+
 configFileName = './config.json'
-headers = {
+reqHeaders = {
     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3835.0 Safari/537.36',
     'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
     'accept-language': 'zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2',
@@ -29,6 +38,9 @@ POST = 'POST'
 
 with open(configFileName) as file:
     config = json.load(file)
+# 运行时记录有无货
+items = {item: False for item in config['items'].keys()}
+
 accountList: List[account.Account] = []
 for _id, _config in config['accounts'].items():
     # remove unASCII char
@@ -50,25 +62,34 @@ atexit.register(saveConfig)
 _currAccountIndex = 0
 defaultLogLvl = 0
 successLogLvl = 1
-timeoutLogLvl = 2
-TooManyFailureLogLvl = 3
+redirectLogLvl = 2
+timeoutLogLvl = 3
+tooManyFailureLogLvl = 4
+
+continueReq = 0
 
 
 def request(
         actionName, method, url, params=None, data=None, headers={}, cookies=None,
         sess: requests.Session = None,
-        checkFun=lambda _resp: _resp.status_code == 200, redirect=True,
-        logLvl={}, timeout=2):
-    logLvl = {defaultLogLvl: logging.WARNING,
-              successLogLvl: logging.DEBUG,
-              timeoutLogLvl: logging.WARNING,
-              TooManyFailureLogLvl: logging.WARNING,
-              **logLvl}
-    sleepTime = 0
+        checkFuc=lambda _resp, args: False, args=(),
+        redirect=True, logLvl={}, timeout=2):
+    _defaultLogLvl = logLvl[defaultLogLvl] if defaultLogLvl in logLvl else logging.WARNING
+    _successLogLvl = logLvl[successLogLvl] if successLogLvl in logLvl else _defaultLogLvl - 10
+    _redirectLogLvl = logLvl[redirectLogLvl] if redirectLogLvl in logLvl else _defaultLogLvl - 10
+    _timeoutLogLvl = logLvl[timeoutLogLvl] if timeoutLogLvl in logLvl else _defaultLogLvl
+    _tooManyFailureLogLvl = logLvl[tooManyFailureLogLvl] if tooManyFailureLogLvl in logLvl else _defaultLogLvl
+    # _logLvl = {defaultLogLvl: logging.WARNING,
+    #            successLogLvl: logging.DEBUG,
+    #            timeoutLogLvl: logging.WARNING,
+    #            tooManyFailureLogLvl: logging.WARNING,
+    #            **logLvl}
+    sleepTime = 0.5
     attemptTimes = 10
     while attemptTimes > 0:
         attemptTimes -= 1
-        sleepTime += 0.5
+        # sleepTime += 0.5
+        # 声明
         resp = None
         try:
             # 使用账户列表中的 session
@@ -87,7 +108,7 @@ def request(
                 timeout=timeout,
                 allow_redirects=False)
             if 'Location' in resp.headers:
-                logging.log(logLvl[defaultLogLvl] - 10, '从 {} 重定向至 {}'.format(url, resp.headers['Location']))
+                logging.log(_defaultLogLvl - 10, '从 {} 重定向至 {}'.format(url, resp.headers['Location']))
                 if redirect:
                     url = resp.headers['location']
                     # headers['Referer'] =
@@ -95,33 +116,41 @@ def request(
                 else:
                     return resp
             if 400 <= resp.status_code < 500:
-                logging.log(logLvl[defaultLogLvl],
+                logging.log(_defaultLogLvl,
                             '\n\t'.join(('{} 发生客户端错误'.format(actionName), str(resp.status_code))))
                 attemptTimes -= 3
                 time.sleep(sleepTime)
                 continue
-            if not checkFun(resp):
-                logging.log(logLvl[defaultLogLvl], '\n\t'.join(('{} 未通过检查'.format(actionName), str(resp.status_code),
-                                                                str(resp.headers), resp.text)))
-                attemptTimes -= 3
-                time.sleep(sleepTime)
+            if resp.status_code == 200:
+                logging.log(_successLogLvl, '{} 请求成功'.format(actionName))
+            elif resp.status_code == 500:
+                logging.log(_successLogLvl, '\n'.join(('{} 响应状态码为 500'.format(actionName), resp.text)))
                 continue
-            logging.log(logLvl[successLogLvl], '{} 成功'.format(actionName))
+            else:
+                logging.log(_defaultLogLvl, '\n\t'.join(('{} 响应状态码为 {}'.format(actionName, resp.status_code),
+                                                         str(resp.headers), resp.text)))
+            if checkFuc(resp, args):
+                # logging.log(_defaultLogLvl, '\n\t'.join(('{} 未通过检查'.format(actionName), str(resp.status_code),
+                #                                          str(resp.headers), resp.text)))
+                attemptTimes -= 3
+                # time.sleep(sleepTime)
+                continue
+            print(resp.text)
             return resp
         except Timeout:
-            logging.log(logLvl[timeoutLogLvl], '{} 超时'.format(actionName))
+            logging.log(_timeoutLogLvl, '{} 超时'.format(actionName))
             continue
         except TooManyRedirects:
-            logging.log(logLvl[defaultLogLvl], '{} 重定向次数过多'.format(actionName))
+            logging.log(_defaultLogLvl, '{} 重定向次数过多'.format(actionName))
             return None
         except Exception as e:
             if resp is None:
-                logging.log(logLvl[defaultLogLvl], '{} 失败, 无 Response'.format(actionName))
+                logging.log(_defaultLogLvl, '{} 失败, 无 Response'.format(actionName))
             else:
-                logging.log(logLvl[defaultLogLvl], '\n\t'.join(('{} 失败'.format(actionName), str(resp.status_code),
-                                                                str(resp.headers), resp.text)))
+                logging.log(_defaultLogLvl, '\n\t'.join(('{} 失败'.format(actionName), str(resp.status_code),
+                                                         str(resp.headers), resp.text)))
             logging.exception(e)
             continue
     else:
-        logging.log(logLvl[TooManyFailureLogLvl], '{} 失败次数过多'.format(actionName))
+        logging.log(_tooManyFailureLogLvl, '{} 失败次数过多'.format(actionName))
         return None

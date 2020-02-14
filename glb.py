@@ -12,14 +12,7 @@ import account
 
 # 设置日志
 logging.getLogger('urllib3').setLevel(logging.FATAL)
-logging.getLogger().setLevel(logging.FATAL)
-handler = logging.StreamHandler()
-handler.setLevel(logging.INFO)
-handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s %(message)s'))
-mainLogger = logging.getLogger('main')
-mainLogger.addHandler(handler)
-# logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
-
+logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
 configFileName = './config.json'
 reqHeaders = {
     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3835.0 Safari/537.36',
@@ -124,7 +117,7 @@ def request(
             if resp.status_code == 200:
                 logging.log(_successLogLvl, '{} 请求成功'.format(actionName))
             elif resp.status_code == 500:
-                logging.log(_successLogLvl, '\n'.join(('{} 响应状态码为 500'.format(actionName), resp.text)))
+                logging.log(_defaultLogLvl, '\n'.join(('{} 响应状态码为 500'.format(actionName), resp.text)))
                 continue
             else:
                 logging.log(_defaultLogLvl, '\n\t'.join(('{} 响应状态码为 {}'.format(actionName, resp.status_code),
@@ -135,7 +128,6 @@ def request(
                 attemptTimes -= 3
                 # time.sleep(sleepTime)
                 continue
-            print(resp.text)
             return resp
         except Timeout:
             logging.log(_timeoutLogLvl, '{} 超时'.format(actionName))

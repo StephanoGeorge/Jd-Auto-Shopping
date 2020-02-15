@@ -28,6 +28,7 @@ class Account:
             if not glb.items[itemId]:
                 return
         self.isBuying = True
+        success = False
         try:
             # TODO: 查看是否限购
             # 添加到购物车
@@ -42,8 +43,8 @@ class Account:
             def getOrderInfoCheck(_resp, args):
                 if re.search('showCheckCode" value="(.+)"', _resp.text).group(1) == 'true':
                     logging.warning('结算({}) 需要通过图形验证码'.format(', '.join((args[0].id, itemId))))
-                    time.sleep(1)
-                    return True
+                time.sleep(1)
+                return True
 
             # 结算
             resp = glb.request(
@@ -53,6 +54,7 @@ class Account:
                 logLvl={glb.defaultLogLvl: logging.ERROR}, timeout=3)
             if resp is None:
                 return
+
             self.config['riskControl'] = re.search('riskControl" value="(.+?)"', resp.text).group(1)
             logging.info('riskControl: {}'.format(self.config['riskControl']))
 
@@ -66,7 +68,7 @@ class Account:
                     return True
                 elif _resp.json()['success'] is True:
                     logging.error('提交订单({}) 成功'.format(', '.join((args[0].id, itemId))))
-
+                    args[1] = True
                     return False
 
             # 提交订单
@@ -91,9 +93,19 @@ class Account:
                         'submitOrderParam.isBestCoupon': 1,  #
                         'submitOrderParam.needCheck': 1,  #
                     },
-                    checkFuc=submitOrderCheck, args=[self],
+                    checkFuc=submitOrderCheck, args=[self, success],
                     logLvl={glb.defaultLogLvl: logging.ERROR}, timeout=3) is None:
                 return
-        #     TODO: 失败后删除商品
+            # 失败后删除商品
         finally:
+            if not success:
+                glb.request('remove from cart ({})'.format(', '.join((itemId, self.id))), glb.POST,
+                            'https://cart.jd.com/removeSkuFromCart.action',
+                            data={'venderId': '8888', 'pid': itemId, 'ptype': '1', 'packId': '0',
+                                  'targetId': '0', 't': '0', 'outSkus': '', 'random': '0.3794799431176733',
+                                  'locationId': glb.config['area']},
+                            headers={'Content-Type': 'application/x-www-form-urlencoded',
+                                     'Origin': 'https://cart.jd.com',
+                                     'Referer': 'https://cart.jd.com/cart.action'},
+                            sess=self.sess, timeout=5)
             self.isBuying = False

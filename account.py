@@ -21,7 +21,7 @@ class Account:
         return glb.request(
             '检测登录', glb.GET, 'https://passport.jd.com/loginservice.aspx?method=Login',
             headers={'Referer': 'https://www.jd.com/'},
-            sess=self.sess, logLvl={glb.successLogLvl: logging.DEBUG})
+            sess=self.sess, logLvl={glb.successLogLvl: logging.DEBUG}, timeout=5)
 
     def buy(self, itemId):
         while self.isBuying:
@@ -49,7 +49,7 @@ class Account:
             resp = glb.request(
                 '结算({})'.format(', '.join((self.id, itemId))), glb.GET,
                 'https://trade.jd.com/shopping/order/getOrderInfo.action',
-                sess=self.sess, checkFuc=getOrderInfoCheck,
+                sess=self.sess, checkFuc=getOrderInfoCheck, args=[self],
                 logLvl={glb.defaultLogLvl: logging.ERROR}, timeout=3)
             if resp is None:
                 return
@@ -66,6 +66,7 @@ class Account:
                     return True
                 elif _resp.json()['success'] is True:
                     logging.error('提交订单({}) 成功'.format(', '.join((args[0].id, itemId))))
+
                     return False
 
             # 提交订单
@@ -90,7 +91,7 @@ class Account:
                         'submitOrderParam.isBestCoupon': 1,  #
                         'submitOrderParam.needCheck': 1,  #
                     },
-                    checkFuc=submitOrderCheck, args=(self,),
+                    checkFuc=submitOrderCheck, args=[self],
                     logLvl={glb.defaultLogLvl: logging.ERROR}, timeout=3) is None:
                 return
         #     TODO: 失败后删除商品

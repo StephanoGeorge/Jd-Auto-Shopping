@@ -48,7 +48,7 @@ def saveConfig():
     with open(configFileName, 'w') as _file:
         for _account in accountList:
             config['accounts'][_account.id]['cookies'] = _account.sess.cookies.get_dict()
-        json.dump(config, _file)
+        json.dump(config, _file, indent=4)
 
 
 atexit.register(saveConfig)

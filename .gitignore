@@ -3,3 +3,4 @@ config.*
 *.out
 .idea/
 __pycache__/
+/todo.md

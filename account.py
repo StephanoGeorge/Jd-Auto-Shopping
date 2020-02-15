@@ -29,6 +29,7 @@ class Account:
                 return
         self.isBuying = True
         try:
+            # TODO: 查看是否限购
             # 添加到购物车
             if glb.request(
                     '添加到购物车({})'.format(', '.join((self.id, itemId))), glb.GET, 'https://cart.jd.com/gate.action',
@@ -39,7 +40,7 @@ class Account:
                 return
 
             def getOrderInfoCheck(_resp, args):
-                if re.search('showCheckCode" value="(.+)"', resp.text).group(1) == 'true':
+                if re.search('showCheckCode" value="(.+)"', _resp.text).group(1) == 'true':
                     logging.warning('结算({}) 需要通过图形验证码'.format(', '.join((args[0].id, itemId))))
                     time.sleep(1)
                     return True
@@ -92,5 +93,6 @@ class Account:
                     checkFuc=submitOrderCheck, args=(self,),
                     logLvl={glb.defaultLogLvl: logging.ERROR}, timeout=3) is None:
                 return
+        #     TODO: 失败后删除商品
         finally:
             self.isBuying = False

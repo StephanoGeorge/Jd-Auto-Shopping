@@ -108,15 +108,15 @@ def request(
                     continue
                 else:
                     return resp
-            if 400 <= resp.status_code < 500:
+            if 200 <= resp.status_code < 300:
+                logging.log(_successLogLvl, '{} 请求成功'.format(actionName))
+            elif 400 <= resp.status_code < 500:
                 logging.log(_defaultLogLvl,
                             '\n\t'.join(('{} 发生客户端错误'.format(actionName), str(resp.status_code))))
                 attemptTimes -= 3
                 time.sleep(sleepTime)
                 continue
-            if resp.status_code == 200:
-                logging.log(_successLogLvl, '{} 请求成功'.format(actionName))
-            elif resp.status_code == 500:
+            elif 500 <= resp.status_code < 600:
                 logging.log(_defaultLogLvl, '\n'.join(('{} 响应状态码为 500'.format(actionName), resp.text)))
                 continue
             else:

@@ -23,7 +23,8 @@ reqHeaders = {
     'connection': 'keep-alive',
     'Pragma': 'no-cache',
     'cache-control': 'no-cache',
-    'TE': 'Trailers'
+    'TE': 'Trailers',
+    'X-Requested-With': 'XMLHttpRequest'
 }
 
 GET = 'GET'
@@ -65,7 +66,7 @@ continueReq = 0
 def request(
         actionName, method, url, params=None, data=None, headers={}, cookies=None,
         sess: requests.Session = None,
-        checkFuc=lambda _resp, args: False, args=(),
+        checkFuc=lambda _resp, args: False, args=[],
         redirect=True, logLvl={}, timeout=2):
     _defaultLogLvl = logLvl[defaultLogLvl] if defaultLogLvl in logLvl else logging.WARNING
     _successLogLvl = logLvl[successLogLvl] if successLogLvl in logLvl else _defaultLogLvl - 10

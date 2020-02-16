@@ -33,7 +33,7 @@ class Account:
             # TODO: 查看是否限购
             # 添加到购物车
             if glb.request(
-                    '添加到购物车({})'.format(', '.join((self.id, itemId))), glb.GET, 'https://cart.jd.com/gate.action',
+                    '添加到购物车 ({})'.format(', '.join((self.id, itemId))), glb.GET, 'https://cart.jd.com/gate.action',
                     params={'pid': itemId, 'pcount': 1, 'ptype': 1},
                     sess=self.sess, redirect=False,
                     logLvl={glb.defaultLogLvl: logging.ERROR,
@@ -42,14 +42,14 @@ class Account:
 
             def getOrderInfoCheck(_resp, args):
                 if re.search('showCheckCode" value="(.+)"', _resp.text).group(1) == 'true':
-                    logging.warning('结算({}) 需要通过图形验证码'.format(', '.join((args[0].id, itemId))))
+                    logging.warning('结算 ({}) 需要通过图形验证码'.format(', '.join((args[0].id, itemId))))
                     time.sleep(1)
                     return True
                 return False
 
             # 结算
             resp = glb.request(
-                '结算({})'.format(', '.join((self.id, itemId))), glb.GET,
+                '结算 ({})'.format(', '.join((self.id, itemId))), glb.GET,
                 'https://trade.jd.com/shopping/order/getOrderInfo.action',
                 sess=self.sess, checkFuc=getOrderInfoCheck, args=[self],
                 logLvl={glb.defaultLogLvl: logging.ERROR}, timeout=3)
@@ -61,20 +61,20 @@ class Account:
 
             def submitOrderCheck(_resp, args):
                 if _resp.json()['resultCode'] in (60123, 600157, 600158):
-                    logging.error('提交订单({}) 失败({})'.format(', '.join((args[0].id, itemId)), _resp.json['message']))
+                    logging.error('提交订单 ({}) 失败({})'.format(', '.join((args[0].id, itemId)), _resp.json()['message']))
                     return False
                 elif _resp.json()['resultCode'] is 60017:
-                    logging.error('提交订单({}) 请求过于频繁'.format(', '.join((args[0].id, itemId))))
+                    logging.error('提交订单 ({}) 请求过于频繁'.format(', '.join((args[0].id, itemId))))
                     time.sleep(5)
                     return True
                 elif _resp.json()['success'] is True:
-                    logging.error('提交订单({}) 成功'.format(', '.join((args[0].id, itemId))))
+                    logging.error('提交订单 ({}) 成功'.format(', '.join((args[0].id, itemId))))
                     args[1] = True
                     return False
 
             # 提交订单
             if glb.request(
-                    '提交订单({})'.format(', '.join((self.id, itemId))), glb.POST,
+                    '提交订单 ({})'.format(', '.join((self.id, itemId))), glb.POST,
                     'https://trade.jd.com/shopping/order/submitOrder.action',
                     headers={'Origin': 'https://trade.jd.com',
                              'Referer': 'https://trade.jd.com/shopping/order/getOrderInfo.action'},

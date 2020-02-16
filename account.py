@@ -43,8 +43,9 @@ class Account:
             def getOrderInfoCheck(_resp, args):
                 if re.search('showCheckCode" value="(.+)"', _resp.text).group(1) == 'true':
                     logging.warning('结算({}) 需要通过图形验证码'.format(', '.join((args[0].id, itemId))))
-                time.sleep(1)
-                return True
+                    time.sleep(1)
+                    return True
+                return False
 
             # 结算
             resp = glb.request(

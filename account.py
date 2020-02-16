@@ -61,7 +61,7 @@ class Account:
 
             def submitOrderCheck(_resp, args):
                 if _resp.json()['resultCode'] in (60123, 600157, 600158):
-                    logging.error('提交订单 ({}) 失败({})'.format(', '.join((args[0].id, itemId)), _resp.json()['message']))
+                    logging.error('提交订单 ({}) 失败(message: {})'.format(', '.join((args[0].id, itemId)), _resp.json()['message']))
                     return False
                 elif _resp.json()['resultCode'] is 60017:
                     logging.error('提交订单 ({}) 请求过于频繁'.format(', '.join((args[0].id, itemId))))
@@ -100,7 +100,7 @@ class Account:
             # 失败后删除商品
         finally:
             if not success:
-                glb.request('remove from cart ({})'.format(', '.join((itemId, self.id))), glb.POST,
+                glb.request('从购物车删除 ({})'.format(', '.join((itemId, self.id))), glb.POST,
                             'https://cart.jd.com/removeSkuFromCart.action',
                             data={'venderId': '8888', 'pid': itemId, 'ptype': '1', 'packId': '0',
                                   'targetId': '0', 't': '0', 'outSkus': '', 'random': '0.3794799431176733',

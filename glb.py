@@ -102,7 +102,7 @@ def request(
                 timeout=timeout,
                 allow_redirects=False)
             if 'Location' in resp.headers:
-                logging.log(_defaultLogLvl - 10, '从 {} 重定向至 {}'.format(url, resp.headers['Location']))
+                logging.log(_redirectLogLvl, '从 {} 重定向至 {}'.format(url, resp.headers['Location']))
                 if redirect:
                     url = resp.headers['location']
                     # headers['Referer'] =

@@ -29,6 +29,7 @@ class Account:
                 return
         self.isBuying = True
         success = False
+        logging.warning('开始购买 ({})'.format(', '.join((self.id, itemId))))
         try:
             # TODO: 查看是否限购
             # 添加到购物车
@@ -39,6 +40,7 @@ class Account:
                     logLvl={glb.defaultLogLvl: logging.ERROR,
                             glb.redirectLogLvl: logging.DEBUG}, timeout=3) is None:
                 return
+            logging.warning('添加到购物车 ({}) 成功'.format(', '.join((self.id, itemId))))
 
             def getOrderInfoCheck(_resp, args):
                 if re.search('showCheckCode" value="(.+)"', _resp.text).group(1) == 'true':
@@ -61,14 +63,15 @@ class Account:
 
             def submitOrderCheck(_resp, args):
                 if _resp.json()['resultCode'] in (60123, 600157, 600158):
-                    logging.error('提交订单 ({}) 失败(message: {})'.format(', '.join((args[0].id, itemId)), _resp.json()['message']))
+                    logging.error(
+                        '提交订单 ({}) 失败 (message: {})'.format(', '.join((args[0].id, itemId)), _resp.json()['message']))
                     return False
                 elif _resp.json()['resultCode'] is 60017:
                     logging.error('提交订单 ({}) 请求过于频繁'.format(', '.join((args[0].id, itemId))))
                     time.sleep(5)
                     return True
                 elif _resp.json()['success'] is True:
-                    logging.error('提交订单 ({}) 成功'.format(', '.join((args[0].id, itemId))))
+                    logging.error('提交订单 ({}) 成功!!!!!!!!!!!!!!!!'.format(', '.join((args[0].id, itemId))))
                     args[1] = True
                     return False
 

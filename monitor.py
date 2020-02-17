@@ -29,11 +29,9 @@ def checkLogin():
             resp = _account.checkLogin()
             if resp is None:
                 continue
-            if resp.json()['Identity']['IsAuthenticated']:
-                logging.info('{} 已登录'.format(_account.id))
-            else:
+            if not resp.json()['Identity']['IsAuthenticated']:
                 logging.error('{} 未登录'.format(_account.id))
-        time.sleep(20 * 60)
+        time.sleep(60)
 
 
 def monitor():

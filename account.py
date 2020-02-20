@@ -16,7 +16,6 @@ class Account:
         self.sess.headers.update(glb.reqHeaders)
         self.isBuying = False
 
-    # TODO: 使用 APP 的数据保持登录
     def checkLogin(self):
         return glb.request(
             '检测登录', glb.GET, 'https://passport.jd.com/loginservice.aspx?method=Login',
@@ -54,7 +53,7 @@ class Account:
                 '结算 ({})'.format(', '.join((self.id, itemId))), glb.GET,
                 'https://trade.jd.com/shopping/order/getOrderInfo.action',
                 sess=self.sess, checkFuc=getOrderInfoCheck, args=(self,),
-                logLvl={glb.defaultLogLvl: logging.ERROR}, timeout=3)
+                redirect=False, logLvl={glb.defaultLogLvl: logging.ERROR}, timeout=3)
             if resp is None:
                 return
 
@@ -70,14 +69,13 @@ class Account:
                     time.sleep(5)
                     return True
                 elif _resp.json()['success'] is True:
-                    logging.error('提交订单 ({}) 成功!!!!!!!!!!!!!!!!'.format(', '.join((args[0].id, itemId))))
+                    logging.error('提交订单 ({}) 成功!!!!!!!!!!!!!!!!!!!'.format(', '.join((args[0].id, itemId))))
                     args[1][0] = True
                     return False
                 else:
-                    logging.error('提交订单 ({}) 失败 (resultCode: {}, message: {})'.format(
+                    logging.error('提交订单 ({}) 失败 ({})'.format(
                         ', '.join((args[0].id, itemId)),
-                        _resp.json()['resultCode'],
-                        _resp.json()['message']))
+                        _resp.json()))
                     return False
 
             # 提交订单
@@ -99,8 +97,8 @@ class Account:
                         'riskControl': self.config['riskControl'],
                         'submitOrderParam.jxj': 1,
                         'submitOrderParam.trackId': self.config['trackId'],
-                        'submitOrderParam.isBestCoupon': 1,  #
-                        'submitOrderParam.needCheck': 1,  #
+                        # 'submitOrderParam.isBestCoupon': 1,  #
+                        # 'submitOrderParam.needCheck': 1,  #
                     },
                     checkFuc=submitOrderCheck, args=(self, success),
                     logLvl={glb.defaultLogLvl: logging.ERROR}, timeout=3) is None:
@@ -112,7 +110,7 @@ class Account:
                             'https://cart.jd.com/removeSkuFromCart.action',
                             data={'venderId': '8888', 'pid': itemId, 'ptype': '1', 'packId': '0',
                                   'targetId': '0', 't': '0', 'outSkus': '', 'random': '0.3794799431176733',
-                                  'locationId': glb.config['area']},
+                                  'locationId': self.config['areaId']},
                             headers={'Content-Type': 'application/x-www-form-urlencoded',
                                      'Origin': 'https://cart.jd.com',
                                      'Referer': 'https://cart.jd.com/cart.action'},

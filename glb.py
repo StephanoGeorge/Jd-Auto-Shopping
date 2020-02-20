@@ -35,24 +35,24 @@ with open(configFileName) as file:
 # 运行时记录有无货
 items = {item: False for item in config['items'].keys()}
 
-accountList: List[account.Account] = []
+accountDict: dict = {}
 for _id, _config in config['accounts'].items():
     # remove unASCII char
     for _key, _value in tuple(_config['cookies'].items()):
         if re.search(r'[^\u0000-\u007F]', _value) is not None:
             del _config['cookies'][_key]
-    accountList.append(account.Account(_id, _config))
+    accountDict[_id] = account.Account(_id, _config)
 
 
 def saveConfig():
     with open(configFileName, 'w') as _file:
-        for _account in accountList:
-            config['accounts'][_account.id]['cookies'] = _account.sess.cookies.get_dict()
+        for _id, _account in accountDict.items():
+            config['accounts'][_id]['cookies'] = _account.sess.cookies.get_dict()
         json.dump(config, _file, indent=4)
 
 
 atexit.register(saveConfig)
-
+accountList = list(accountDict.values())
 _currAccountIndex = 0
 defaultLogLvl = 0
 successLogLvl = 1

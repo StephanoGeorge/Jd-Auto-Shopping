@@ -28,7 +28,7 @@ class Account:
             if not glb.items[itemId]:
                 return
         self.isBuying = True
-        success = False
+        success = (False,)
         logging.warning('开始购买 ({})'.format(', '.join((self.id, itemId))))
         try:
             # TODO: 查看是否限购
@@ -53,18 +53,17 @@ class Account:
             resp = glb.request(
                 '结算 ({})'.format(', '.join((self.id, itemId))), glb.GET,
                 'https://trade.jd.com/shopping/order/getOrderInfo.action',
-                sess=self.sess, checkFuc=getOrderInfoCheck, args=[self],
+                sess=self.sess, checkFuc=getOrderInfoCheck, args=(self,),
                 logLvl={glb.defaultLogLvl: logging.ERROR}, timeout=3)
             if resp is None:
                 return
 
             self.config['riskControl'] = re.search('riskControl" value="(.+?)"', resp.text).group(1)
-            logging.info('riskControl: {}'.format(self.config['riskControl']))
 
             def submitOrderCheck(_resp, args):
                 if _resp.json()['resultCode'] in (60123, 600157, 600158):
-                    logging.error(
-                        '提交订单 ({}) 失败 (message: {})'.format(', '.join((args[0].id, itemId)), _resp.json()['message']))
+                    logging.error('提交订单 ({}) 失败 (message: {})'.format(
+                        ', '.join((args[0].id, itemId)), _resp.json()['message']))
                     return False
                 elif _resp.json()['resultCode'] is 60017:
                     logging.error('提交订单 ({}) 请求过于频繁'.format(', '.join((args[0].id, itemId))))
@@ -72,7 +71,13 @@ class Account:
                     return True
                 elif _resp.json()['success'] is True:
                     logging.error('提交订单 ({}) 成功!!!!!!!!!!!!!!!!'.format(', '.join((args[0].id, itemId))))
-                    args[1] = True
+                    args[1][0] = True
+                    return False
+                else:
+                    logging.error('提交订单 ({}) 失败 (resultCode: {}, message: {})'.format(
+                        ', '.join((args[0].id, itemId)),
+                        _resp.json()['resultCode'],
+                        _resp.json()['message']))
                     return False
 
             # 提交订单
@@ -97,13 +102,13 @@ class Account:
                         'submitOrderParam.isBestCoupon': 1,  #
                         'submitOrderParam.needCheck': 1,  #
                     },
-                    checkFuc=submitOrderCheck, args=[self, success],
+                    checkFuc=submitOrderCheck, args=(self, success),
                     logLvl={glb.defaultLogLvl: logging.ERROR}, timeout=3) is None:
                 return
             # 失败后删除商品
         finally:
-            if not success:
-                glb.request('从购物车删除 ({})'.format(', '.join((itemId, self.id))), glb.POST,
+            if not success[0]:
+                glb.request('从购物车删除 ({})'.format(', '.join((self.id, itemId))), glb.POST,
                             'https://cart.jd.com/removeSkuFromCart.action',
                             data={'venderId': '8888', 'pid': itemId, 'ptype': '1', 'packId': '0',
                                   'targetId': '0', 't': '0', 'outSkus': '', 'random': '0.3794799431176733',

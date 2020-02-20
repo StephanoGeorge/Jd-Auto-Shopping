@@ -11,11 +11,12 @@ isInStockApiParams = []
 _count = 100
 _currIndex = 0
 while True:
+    # 分割商品列表
     _currItems = list(glb.config['items'].keys())[_currIndex:_currIndex + _count]
     if len(_currItems) != 0:
         isInStockApiParams.append({
             'skuIds': ','.join([itemId for itemId in _currItems]),
-            'area': glb.config['area'],
+            'area': glb.accountList[0].config['areaId'],  # 使用第1个账户的
             'type': 'getstocks'})
         _currIndex += _count
         continue
@@ -52,22 +53,16 @@ def _monitor(isInStockApiParam):
             continue
         try:
             for itemId, value in resp.json().items():
-                if value['skuState'] == 0:
-                    # isInStockApiParams['skuIds'] = re.sub('{},?'.format(itemId), '', isInStockApiParams['skuIds'])
-                    glb.config['items'][itemId] = False
+                if value['skuState'] == 0 or value['StockState'] not in (33, 40):
                     glb.items[itemId] = False
-                    continue
-                if value['StockState'] in (33, 40):
+                else:
                     logging.warning('{} 有货'.format(itemId))
                     glb.items[itemId] = True
-                    # Thread(target=buy, args=(itemId,)).start()
                     buy(itemId)
-                else:
-                    glb.items[itemId] = False
         except JSONDecodeError:
             continue
 
 
 def buy(itemId):
-    for _account in glb.accountList:
-        Thread(target=_account.buy, args=(itemId,)).start()
+    for _id in glb.config['items'][itemId]:
+        Thread(target=glb.accountDict[_id].buy, args=(itemId,)).start()

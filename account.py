@@ -28,7 +28,7 @@ class Account:
             if not glb.items[itemId]:
                 return
         self.isBuying = True
-        success = (False,)
+        success = [False]
         logging.warning('开始购买 ({})'.format(', '.join((self.id, itemId))))
         try:
             # TODO: 查看是否限购
@@ -105,8 +105,8 @@ class Account:
                     checkFuc=submitOrderCheck, args=(self, success),
                     logLvl={glb.defaultLogLvl: logging.ERROR}, timeout=3) is None:
                 return
-            # 失败后删除商品
         finally:
+            # 失败后删除商品
             if not success[0]:
                 glb.request('从购物车删除 ({})'.format(', '.join((self.id, itemId))), glb.POST,
                             'https://cart.jd.com/removeSkuFromCart.action',

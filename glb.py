@@ -1,11 +1,9 @@
-import json
+from ruamel import yaml
 import logging
 import re
 
 import atexit
 import time
-from typing import List
-import requests
 from requests import Timeout, TooManyRedirects
 
 import account
@@ -13,7 +11,7 @@ import account
 # 设置日志
 logging.getLogger('urllib3').setLevel(logging.FATAL)
 logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
-configFileName = './config.json'
+configFileName = './config.yaml'
 reqHeaders = {
     'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3835.0 Safari/537.36',
     'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
@@ -36,7 +34,7 @@ def canBuy(itemId):
 
 
 with open(configFileName) as file:
-    config = json.load(file)
+    config = yaml.round_trip_load(file)
 # 运行时记录有无货
 items = {itemId: {'inStock': False,
                   'snappingUp': False} for itemId in config['items'].keys()}
@@ -54,7 +52,7 @@ def saveConfig():
     with open(configFileName, 'w') as _file:
         for _id, _account in accountDict.items():
             config['accounts'][_id]['cookies'] = _account.sess.cookies.get_dict()
-        json.dump(config, _file, indent=4)
+        yaml.round_trip_dump(config, _file, indent=4)
 
 
 atexit.register(saveConfig)

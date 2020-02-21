@@ -30,10 +30,16 @@ reqHeaders = {
 GET = 'GET'
 POST = 'POST'
 
+
+def canBuy(itemId):
+    return items[itemId]['inStock'] and not items[itemId]['snappingUp']
+
+
 with open(configFileName) as file:
     config = json.load(file)
 # 运行时记录有无货
-items = {item: False for item in config['items'].keys()}
+items = {itemId: {'inStock': False,
+                  'snappingUp': False} for itemId in config['items'].keys()}
 
 accountDict: dict = {}
 for _id, _config in config['accounts'].items():
@@ -64,8 +70,7 @@ continueReq = 0
 
 
 def request(
-        actionName, method, url, params=None, data=None, headers={}, cookies=None,
-        sess: requests.Session = None,
+        actionName, sess, method, url, params=None, headers={}, cookies=None, data=None,
         checkFuc=lambda _resp, args: False, args=(),
         redirect=True, logLvl={}, timeout=2):
     _defaultLogLvl = logLvl[defaultLogLvl] if defaultLogLvl in logLvl else logging.WARNING
@@ -73,11 +78,6 @@ def request(
     _redirectLogLvl = logLvl[redirectLogLvl] if redirectLogLvl in logLvl else _defaultLogLvl - 10
     _timeoutLogLvl = logLvl[timeoutLogLvl] if timeoutLogLvl in logLvl else _defaultLogLvl
     _tooManyFailureLogLvl = logLvl[tooManyFailureLogLvl] if tooManyFailureLogLvl in logLvl else _defaultLogLvl
-    # _logLvl = {defaultLogLvl: logging.WARNING,
-    #            successLogLvl: logging.DEBUG,
-    #            timeoutLogLvl: logging.WARNING,
-    #            tooManyFailureLogLvl: logging.WARNING,
-    #            **logLvl}
     sleepTime = 0.5
     attemptTimes = 10
     while attemptTimes > 0:
@@ -103,6 +103,8 @@ def request(
                 allow_redirects=False)
             if 'Location' in resp.headers:
                 logging.log(_redirectLogLvl, '从 {} 重定向至 {}'.format(url, resp.headers['Location']))
+                if '//trade.jd.com/orderBack.html' in resp.headers['Location']:
+                    return None
                 if redirect:
                     url = resp.headers['location']
                     # headers['Referer'] =
@@ -124,10 +126,7 @@ def request(
                 logging.log(_defaultLogLvl, '\n\t'.join(('{} 响应状态码为 {}'.format(actionName, resp.status_code),
                                                          str(resp.headers), resp.text)))
             if checkFuc(resp, args):
-                # logging.log(_defaultLogLvl, '\n\t'.join(('{} 未通过检查'.format(actionName), str(resp.status_code),
-                #                                          str(resp.headers), resp.text)))
                 attemptTimes -= 3
-                # time.sleep(sleepTime)
                 continue
             return resp
         except Timeout:

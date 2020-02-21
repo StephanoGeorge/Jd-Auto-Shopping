@@ -36,30 +36,31 @@ def checkLogin():
 
 
 def monitor():
-    logging.info('开始监控库存')
+    logging.info('### 开始监控库存 ###')
     for isInStockApiParam in isInStockApiParams:
         Thread(target=_monitor, args=(isInStockApiParam,)).start()
     Thread(target=checkSnappingUp).start()
 
 
 def checkSnappingUp():
-    for itemId in glb.config['items'].keys():
-        resp = glb.request('检查是否为抢购商品', glb.GET, 'https://yushou.jd.com/youshouinfo.action',
-                           params={'sku': itemId},
-                           headers={'referer': 'https://item.jd.com/{}.html'.format(itemId),
-                                    'cookie': None},
-                           logLvl={glb.successLogLvl: logging.DEBUG,  # 请求成功的日志等级
-                                   glb.timeoutLogLvl: logging.DEBUG,  # 请求超时的日志等级
-                                   glb.tooManyFailureLogLvl: logging.DEBUG},  # 过多失败的日志等级
-                           timeout=5)
-        if resp is not None and resp.text != '{"error":"pss info is null"}':
-            glb.items[itemId]['snappingUp'] = True
-        time.sleep(10)
+    while True:
+        for itemId in glb.config['items'].keys():
+            resp = glb.request('检查是否为抢购商品', None, glb.GET, 'https://yushou.jd.com/youshouinfo.action',
+                               params={'sku': itemId},
+                               headers={'referer': 'https://item.jd.com/{}.html'.format(itemId),
+                                        'cookie': None},
+                               logLvl={glb.successLogLvl: logging.DEBUG,  # 请求成功的日志等级
+                                       glb.timeoutLogLvl: logging.DEBUG,  # 请求超时的日志等级
+                                       glb.tooManyFailureLogLvl: logging.DEBUG},  # 过多失败的日志等级
+                               timeout=5)
+            if resp is not None and resp.text != '{"error":"pss info is null"}':
+                glb.items[itemId]['snappingUp'] = True
+        time.sleep(60 * 10)
 
 
 def _monitor(isInStockApiParam):
     while True:
-        resp = glb.request('监控库存', glb.GET, 'https://c0.3.cn/stocks',
+        resp = glb.request('监控库存', None, glb.GET, 'https://c0.3.cn/stocks',
                            params=isInStockApiParam, headers={'cookie': None},
                            logLvl={glb.successLogLvl: logging.DEBUG,  # 请求成功的日志等级
                                    glb.timeoutLogLvl: logging.DEBUG,  # 请求超时的日志等级

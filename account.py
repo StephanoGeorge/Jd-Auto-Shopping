@@ -1,4 +1,5 @@
 import logging
+import os
 import re
 import time
 from random import random
@@ -42,7 +43,7 @@ class Account:
 
             def getOrderInfoCheck(_resp, args):
                 if re.search('showCheckCode" value="(.+)"', _resp.text).group(1) == 'true':
-                    logging.warning('结算 ({}) 需要通过图形验证码'.format(', '.join((args[0].id, itemId))))
+                    logging.warning('结算 ({}) 需要通过图形验证码'.format(', '.join((args[0].id, args[1]))))
                     time.sleep(1)
                     return True
                 return False
@@ -51,7 +52,7 @@ class Account:
             resp = glb.request(
                 '结算 ({})'.format(', '.join((self.id, itemId))), self.sess, glb.GET,
                 'https://trade.jd.com/shopping/order/getOrderInfo.action',
-                checkFuc=getOrderInfoCheck, args=(self,),
+                checkFuc=getOrderInfoCheck, args=(self, itemId),
                 redirect=False, logLvl={glb.defaultLogLvl: logging.ERROR}, timeout=3)
             if resp is None:
                 return
@@ -59,22 +60,27 @@ class Account:
             self.config['riskControl'] = re.search('riskControl" value="(.+?)"', resp.text).group(1)
 
             def submitOrderCheck(_resp, args):
-                if _resp.json()['resultCode'] in (60123, 600157, 600158):
+                if _resp.json()['resultCode'] in (60123, 600157):
                     logging.error('提交订单 ({}) 失败 (message: {})'.format(
-                        ', '.join((args[0].id, itemId)), _resp.json()['message']))
+                        ', '.join((args[0].id, args[1])), _resp.json()['message']))
+                    return False
+                elif _resp.json()['resultCode'] is 600158:
+                    logging.error('提交订单 ({}) 失败 (message: {})'.format(
+                        ', '.join((args[0].id, args[1])), _resp.json()['message']))
+                    glb.items[args[1]]['isInStock'] = False
                     return False
                 elif _resp.json()['resultCode'] is 60017:
-                    logging.error('提交订单 ({}) 请求过于频繁'.format(', '.join((args[0].id, itemId))))
+                    logging.error('提交订单 ({}) 请求过于频繁'.format(', '.join((args[0].id, args[1]))))
                     time.sleep(5)
                     return True
                 elif _resp.json()['success'] is True:
-                    logging.error('提交订单 ({}) 成功!!!!!!!!!!!!!!!!!!!'.format(', '.join((args[0].id, itemId))))
-                    args[1][0] = True
+                    logging.error('提交订单 ({}) 成功!!!!!!!!!!!!!!!!!!!'.format(', '.join((args[0].id, args[1]))))
+                    args[2][0] = True
                     return False
                 else:
                     logging.error('提交订单 ({}) 失败 ({})'.format(
-                        ', '.join((args[0].id, itemId)),
-                        resp.json()['resultCode'],
+                        ', '.join((args[0].id, args[1])),
+                        _resp.json()['resultCode'],
                         _resp.json()))
                     return False
 
@@ -100,7 +106,7 @@ class Account:
                         # 'submitOrderParam.isBestCoupon': 1,  #
                         # 'submitOrderParam.needCheck': 1,  #
                     },
-                    checkFuc=submitOrderCheck, args=(self, success),
+                    checkFuc=submitOrderCheck, args=(self, itemId, success),
                     logLvl={glb.defaultLogLvl: logging.ERROR}, timeout=3) is None:
                 return
         finally:

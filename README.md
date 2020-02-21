@@ -10,13 +10,13 @@
 
 # 使用方法
 
-将 `configTemplate.json` 文件更名为 `config.json`, 并按照说明配置, 运行 `main.py`
+将 `configTemplate.yaml` 文件更名为 `config.yaml`, 并按照说明配置, 运行 `main.py`
 
 ## 获取下单相关的值
 
 向购物车中加入任意商品, 点击去结算, 在订单结算页面打开开发者工具, 在 Console 中执行以下代码, 将输出复制至配置文件:
 
-```js
+```javascript
 let eid = $('#eid').val();
 let fp = $('#fp').val();
 let trackId = getTakId();
@@ -33,7 +33,7 @@ console.log(`"eid": "${eid}",\n"fp": "${fp}",\n"trackId": "${trackId}"\n`);
 
 # 说明
 
-- 监控库存正常或超时都不会输出
+- 监控库存正常或超时都不会输出, 要自定义请修改代码
 - cookies 24h 过期
 - 下单后自行支付
-- 停止程序后再编辑 `config.json`
+- 停止程序后再编辑 `config.yaml`

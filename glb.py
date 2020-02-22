@@ -37,7 +37,7 @@ with open(configFileName) as file:
 items = {itemId: {'inStock': False,
                   'snappingUp': False} for itemId in config['items'].keys()}
 
-accountDict: dict = {}
+accountDict = {}
 for _id, _config in config['accounts'].items():
     # remove unASCII char
     for _key, _value in tuple(_config['cookies'].items()):
@@ -129,7 +129,7 @@ def request(
             else:
                 logging.log(_defaultLogLvl, '\n\t'.join(('{} 失败'.format(actionName), str(resp.status_code),
                                                          str(resp.headers), resp.text)))
-            logging.exception(e)
+                logging.exception(e)
             continue
     else:
         logging.log(_tooManyFailureLogLvl, '{} 失败次数过多'.format(actionName))

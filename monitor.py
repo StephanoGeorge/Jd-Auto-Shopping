@@ -80,5 +80,10 @@ def _monitor(isInStockApiParam):
 
 
 def buy(itemId):
-    for _id in glb.config['items'][itemId]:
-        Thread(target=glb.accountDict[_id].buy, args=(itemId,)).start()
+    idsOfAccountsWantToBuy = glb.config['items'][itemId]
+    if len(idsOfAccountsWantToBuy) == 0:
+        for account in glb.accountList:
+            Thread(target=account.buy, args=(itemId,)).start()
+    else:
+        for _id in idsOfAccountsWantToBuy:
+            Thread(target=glb.accountDict[_id].buy, args=(itemId,)).start()

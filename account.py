@@ -57,7 +57,7 @@ class Account:
             if resp is None:
                 return
 
-            self.config['riskControl'] = re.search('riskControl" value="(.+?)"', resp.text).group(1)
+            riskControl = re.search('riskControl" value="(.+?)"', resp.text).group(1)
 
             def submitOrderCheck(_resp, args):
                 if _resp.json()['resultCode'] in (60123, 600157):
@@ -66,7 +66,7 @@ class Account:
                     return False
                 elif _resp.json()['resultCode'] is 600158:
                     logging.error('提交订单 ({}) 失败 (无货)'.format(', '.join((args[0].id, args[1]))))
-                    glb.items[args[1]]['isInStock'] = False
+                    glb.runTimeItems[args[1]][glb.isInStock] = False
                     return False
                 elif _resp.json()['resultCode'] is 60017:
                     logging.error('提交订单 ({}) 失败 (请求过于频繁), 睡眠5s'.format(', '.join((args[0].id, args[1]))))
@@ -95,10 +95,9 @@ class Account:
                         'submitOrderParam.trackID': 'TestTrackId',
                         'submitOrderParam.ignorePriceChange': '0',
                         'submitOrderParam.btSupport': '0',
-                        # https://gia.jd.com/fcf.html
-                        'submitOrderParam.eid': self.config['eid'],  # 几乎不变
-                        'submitOrderParam.fp': self.config['fp'],  # 几乎不变
-                        'riskControl': self.config['riskControl'],
+                        'submitOrderParam.eid': self.config['eid'],  # https://gia.jd.com/fcf.html
+                        'submitOrderParam.fp': self.config['fp'],
+                        'riskControl': riskControl,
                         'submitOrderParam.jxj': 1,
                         'submitOrderParam.trackId': self.config['trackId'],
                         # 'submitOrderParam.isBestCoupon': 1,  #

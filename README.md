@@ -37,5 +37,4 @@ console.log(`"eid": "${eid}",\n"fp": "${fp}",\n"trackId": "${trackId}"\n`);
 - cookies 24h 过期
 - 下单后自行支付
 - 不会购买抢购商品
-- 一些库的异常日志我不会禁用, 这些异常跟在 '...失败, 无 Response' 后面, 请忽略
 - 遇到意外的异常先试试最新版, 还有问题的话请提交 Issue

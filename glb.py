@@ -20,15 +20,14 @@ reqHeaders = {
     'Pragma': 'no-cache',
     'cache-control': 'no-cache',
     'TE': 'Trailers',
-    'X-Requested-With': 'XMLHttpRequest'
-}
+    'X-Requested-With': 'XMLHttpRequest'}
 
 GET = 'GET'
 POST = 'POST'
 
 
 def canBuy(itemId):
-    return items[itemId]['isInStock'] and not items[itemId]['isSnappingUp']
+    return runTimeItems[itemId][isInStock] and not runTimeItems[itemId][isSnappingUp]
 
 
 with open(configFileName) as file:
@@ -36,9 +35,12 @@ with open(configFileName) as file:
     # remove unASCII char
     configStr = re.sub(r'[^\u0000-\u007F]', '', configStr)
     config = yaml.round_trip_load(configStr)
-# 运行时记录有无货
-items = {itemId: {'isInStock': False,
-                  'isSnappingUp': False} for itemId in config['items'].keys()}
+
+isInStock = 0
+isSnappingUp = 1
+# 运行时记录有无货等
+runTimeItems = {itemId: {isInStock: False,
+                         isSnappingUp: False} for itemId in config['items'].keys()}
 
 accountDict = {}
 for _id, _config in config['accounts'].items():
@@ -52,7 +54,7 @@ redirectLogLvl = 2
 timeoutLogLvl = 3
 tooManyFailureLogLvl = 4
 
-continueReq = 0
+continueReq = 5
 
 
 def request(

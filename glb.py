@@ -1,8 +1,6 @@
 from ruamel import yaml
 import logging
 import re
-
-import atexit
 import time
 from requests import Timeout, TooManyRedirects
 
@@ -48,14 +46,6 @@ for _id, _config in config['accounts'].items():
     accountDict[_id] = account.Account(_id, _config)
 
 
-def saveConfig():
-    with open(configFileName, 'w') as _file:
-        for _id, _account in accountDict.items():
-            config['accounts'][_id]['cookies'] = _account.sess.cookies.get_dict()
-        yaml.round_trip_dump(config, _file, indent=4)
-
-
-atexit.register(saveConfig)
 accountList = list(accountDict.values())
 _currAccountIndex = 0
 defaultLogLvl = 0

@@ -1,0 +1,33 @@
+# 监控的商品列表
+items:
+    # <商品 ID>
+    '1835968':
+        # 要购买此商品的帐号
+        - me
+    '100002810148':
+        - me
+        - another
+    '100001998333':
+        - me
+# 账户列表
+accounts:
+    me:
+        config:
+            # 地区代码
+            areaId: '00_00_0000_0000'
+            # 下单相关
+            eid: '1'
+            fp: '1'
+            trackId: '1'
+        cookies:
+            cookie_1: 'a'
+            another: 'b'
+    another:
+        config:
+            areaId: '00_00_0000_0000'
+            eid: '1'
+            fp: '1'
+            trackId: '1'
+        cookies:
+            cookie_1: 'a'
+            another: 'b'

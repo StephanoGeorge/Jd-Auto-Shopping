@@ -2,7 +2,7 @@ from ruamel import yaml
 import logging
 import re
 import time
-from requests import Timeout, TooManyRedirects
+from requests import Timeout, TooManyRedirects, Session
 
 import account
 
@@ -28,23 +28,21 @@ POST = 'POST'
 
 
 def canBuy(itemId):
-    return items[itemId]['inStock'] and not items[itemId]['snappingUp']
+    return items[itemId]['isInStock'] and not items[itemId]['isSnappingUp']
 
 
 with open(configFileName) as file:
-    config = yaml.round_trip_load(file)
+    configStr = file.read()
+    # remove unASCII char
+    configStr = re.sub(r'[^\u0000-\u007F]', '', configStr)
+    config = yaml.round_trip_load(configStr)
 # 运行时记录有无货
-items = {itemId: {'inStock': False,
-                  'snappingUp': False} for itemId in config['items'].keys()}
+items = {itemId: {'isInStock': False,
+                  'isSnappingUp': False} for itemId in config['items'].keys()}
 
 accountDict = {}
 for _id, _config in config['accounts'].items():
-    # remove unASCII char
-    for _key, _value in tuple(_config['cookies'].items()):
-        if re.search(r'[^\u0000-\u007F]', _value) is not None:
-            del _config['cookies'][_key]
     accountDict[_id] = account.Account(_id, _config)
-
 
 accountList = list(accountDict.values())
 _currAccountIndex = 0
@@ -58,7 +56,7 @@ continueReq = 0
 
 
 def request(
-        actionName, sess, method, url, params=None, headers={}, cookies=None, data=None,
+        actionName, sess: Session, method, url, params=None, headers={}, cookies=None, data=None,
         checkFuc=lambda _resp, args: False, args=(),
         redirect=True, logLvl={}, timeout=2):
     _defaultLogLvl = logLvl[defaultLogLvl] if defaultLogLvl in logLvl else logging.WARNING
@@ -126,11 +124,12 @@ def request(
         except Exception as e:
             if resp is None:
                 logging.log(_defaultLogLvl, '{} 失败, 无 Response'.format(actionName))
+                continue
             else:
                 logging.log(_defaultLogLvl, '\n\t'.join(('{} 失败'.format(actionName), str(resp.status_code),
                                                          str(resp.headers), resp.text)))
                 logging.exception(e)
-            continue
+                continue
     else:
         logging.log(_tooManyFailureLogLvl, '{} 失败次数过多'.format(actionName))
         return None

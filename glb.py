@@ -26,9 +26,6 @@ GET = 'GET'
 POST = 'POST'
 
 
-def canBuy(itemId):
-    return runTimeItems[itemId][isInStock] and not runTimeItems[itemId][isSnappingUp]
-
 
 with open(configFileName) as file:
     configStr = file.read()

@@ -8,6 +8,11 @@ import glb
 import requests
 
 
+def canBuy(itemId):
+    item = glb.runTimeItems[itemId]
+    return item[glb.isInStock] and not item[glb.isSnappingUp]
+
+
 class Account:
     def __init__(self, id, config):
         self.id = id
@@ -26,7 +31,7 @@ class Account:
 
     def buy(self, itemId):
         while self.isBuying:
-            if not glb.canBuy(itemId):
+            if not canBuy(itemId):
                 return
         self.isBuying = True
         success = [False]

@@ -65,23 +65,21 @@ class Account:
                         ', '.join((args[0].id, args[1])), _resp.json()['message']))
                     return False
                 elif _resp.json()['resultCode'] is 600158:
-                    logging.error('提交订单 ({}) 失败 (message: {})'.format(
-                        ', '.join((args[0].id, args[1])), _resp.json()['message']))
+                    logging.error('提交订单 ({}) 失败 (无货)'.format(', '.join((args[0].id, args[1]))))
                     glb.items[args[1]]['isInStock'] = False
                     return False
                 elif _resp.json()['resultCode'] is 60017:
-                    logging.error('提交订单 ({}) 请求过于频繁'.format(', '.join((args[0].id, args[1]))))
+                    logging.error('提交订单 ({}) 失败 (请求过于频繁), 睡眠5s'.format(', '.join((args[0].id, args[1]))))
                     time.sleep(5)
                     return True
                 elif _resp.json()['success'] is True:
-                    logging.error('提交订单 ({}) 成功!!!!!!!!!!!!!!!!!!!'.format(', '.join((args[0].id, args[1]))))
+                    logging.error('\n\n\n提交订单 ({}) 成功!!!!!!!!!!!!!!!!!!!\n\n\n'.format(
+                        ', '.join((args[0].id, args[1]))))
                     args[2][0] = True
                     return False
                 else:
                     logging.error('提交订单 ({}) 失败 ({})'.format(
-                        ', '.join((args[0].id, args[1])),
-                        _resp.json()['resultCode'],
-                        _resp.json()))
+                        ', '.join((args[0].id, args[1])), _resp.json()))
                     return False
 
             # 提交订单

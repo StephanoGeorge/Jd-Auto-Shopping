@@ -20,7 +20,7 @@
 let eid = $('#eid').val();
 let fp = $('#fp').val();
 let trackId = getTakId();
-console.log(`"eid": "${eid}",\n"fp": "${fp}",\n"trackId": "${trackId}"\n`);
+console.log(`eid: ${eid}\nfp: ${fp}\ntrackId: ${trackId}\n`);
 ```
 
 ## 获取 cookies

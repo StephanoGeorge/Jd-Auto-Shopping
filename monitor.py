@@ -54,7 +54,7 @@ def checkSnappingUp():
                                        glb.tooManyFailureLogLvl: logging.DEBUG},  # 过多失败的日志等级
                                timeout=5)
             if resp is not None and resp.text != '{"error":"pss info is null"}':
-                glb.items[itemId]['snappingUp'] = True
+                glb.items[itemId]['isSnappingUp'] = True
         time.sleep(60 * 10)
 
 
@@ -70,10 +70,10 @@ def _monitor(isInStockApiParam):
             try:
                 for itemId, value in resp.json().items():
                     if value['skuState'] == 0 or value['StockState'] not in (33, 40):
-                        glb.items[itemId]['inStock'] = False
+                        glb.items[itemId]['isInStock'] = False
                     else:
                         logging.warning('{} 有货'.format(itemId))
-                        glb.items[itemId]['inStock'] = True
+                        glb.items[itemId]['isInStock'] = True
                         buy(itemId)
             except JSONDecodeError:
                 continue

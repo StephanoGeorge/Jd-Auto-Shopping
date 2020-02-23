@@ -1,28 +1,29 @@
 import logging
 from json import JSONDecodeError
-
 import time
-
 from threading import Thread
 
-import account
 import glb
 
+
 isInStockApiParams = []
-_count = 100
-_currIndex = 0
-while True:
-    # 分割商品列表
-    _currItems = list(glb.config['items'].keys())[_currIndex:_currIndex + _count]
-    if len(_currItems) != 0:
-        isInStockApiParams.append({
-            'skuIds': ','.join([itemId for itemId in _currItems]),
-            'area': glb.accountList[0].config['areaId'],  # 使用第1个账户的
-            'type': 'getstocks'})
-        _currIndex += _count
-        continue
-    else:
-        break
+
+
+def init():
+    _count = 100
+    _currIndex = 0
+    while True:
+        # 分割商品列表
+        _currItems = list(glb.config['items'].keys())[_currIndex:_currIndex + _count]
+        if len(_currItems) != 0:
+            isInStockApiParams.append({
+                'skuIds': ','.join([itemId for itemId in _currItems]),
+                'area': glb.accountList[0].config['areaId'],  # 使用第1个账户的
+                'type': 'getstocks'})
+            _currIndex += _count
+            continue
+        else:
+            break
 
 
 def checkLogin():

@@ -1,12 +1,9 @@
 import logging
-import os
 import re
 import time
-from random import random
-
-import glb
 import requests
 
+import glb
 import monitor
 
 

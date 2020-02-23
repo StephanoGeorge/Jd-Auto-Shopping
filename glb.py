@@ -25,25 +25,32 @@ reqHeaders = {
 GET = 'GET'
 POST = 'POST'
 
-
-
-with open(configFileName) as file:
-    configStr = file.read()
-    # remove unASCII char
-    configStr = re.sub(r'[^\u0000-\u007F]', '', configStr)
-    config = yaml.round_trip_load(configStr)
-
 isInStock = 0
 isSnappingUp = 1
+
+config = None
+
 # 运行时记录有无货等
-runTimeItems = {itemId: {isInStock: False,
-                         isSnappingUp: False} for itemId in config['items'].keys()}
+runTimeItems = None
 
 accountDict = {}
-for _id, _config in config['accounts'].items():
-    accountDict[_id] = account.Account(_id, _config)
+accountList = None
 
-accountList = list(accountDict.values())
+
+def init():
+    global accountList, config, runTimeItems
+    with open(configFileName) as file:
+        configStr = file.read()
+        # remove unASCII char
+        configStr = re.sub(r'[^\u0000-\u007F]', '', configStr)
+        config = yaml.round_trip_load(configStr)
+        runTimeItems = {itemId: {isInStock: False,
+                                 isSnappingUp: False} for itemId in config['items'].keys()}
+        for _id, _config in config['accounts'].items():
+            accountDict[_id] = account.Account(_id, _config)
+        accountList = list(accountDict.values())
+
+
 _currAccountIndex = 0
 defaultLogLvl = 0
 successLogLvl = 1

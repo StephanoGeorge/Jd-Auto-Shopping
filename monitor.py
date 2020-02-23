@@ -5,6 +5,7 @@ import time
 
 from threading import Thread
 
+import account
 import glb
 
 isInStockApiParams = []
@@ -36,24 +37,37 @@ def checkLogin():
 
 
 def monitor():
+    logging.info('### 检查是否为抢购商品 ###')
+    _checkSnappingUp()
     logging.info('### 开始监控库存 ###')
     for isInStockApiParam in isInStockApiParams:
         Thread(target=_monitor, args=(isInStockApiParam,)).start()
-    Thread(target=checkSnappingUp, args=(glb.runTimeItems.keys(),)).start()
+    Thread(target=checkSnappingUp).start()
 
 
-def checkSnappingUp(itemIds):
-    for itemId in itemIds:
-        resp = glb.request('检查是否为抢购商品', None, glb.GET, 'https://yushou.jd.com/youshouinfo.action',
-                           params={'sku': itemId},
-                           headers={'referer': 'https://item.jd.com/{}.html'.format(itemId),
-                                    'cookie': None},
-                           logLvl={glb.successLogLvl: logging.DEBUG,  # 请求成功的日志等级
-                                   glb.timeoutLogLvl: logging.DEBUG,  # 请求超时的日志等级
-                                   glb.tooManyFailureLogLvl: logging.DEBUG},  # 过多失败的日志等级
-                           timeout=5)
+def checkSnappingUp():
+    while True:
+        _checkSnappingUp()
+
+
+def _checkSnappingUp():
+    for itemId in glb.runTimeItems.keys():
+        resp = glb.request(
+            '检查是否为抢购商品', None, glb.GET, 'https://yushou.jd.com/youshouinfo.action',
+            params={'sku': itemId},
+            headers={'referer': 'https://item.jd.com/{}.html'.format(itemId),
+                     'cookie': None},
+            logLvl={glb.successLogLvl: logging.DEBUG,  # 请求成功的日志等级
+                    glb.timeoutLogLvl: logging.DEBUG,  # 请求超时的日志等级
+                    glb.tooManyFailureLogLvl: logging.DEBUG},  # 过多失败的日志等级
+            timeout=3)
         if resp is not None and resp.text != '{"error":"pss info is null"}':
-            glb.runTimeItems[itemId][glb.isSnappingUp] = True
+            if not glb.runTimeItems[itemId][glb.isSnappingUp]:
+                logging.warning('{} 是抢购商品, 不自动购买'.format(itemId))
+                glb.runTimeItems[itemId][glb.isSnappingUp] = True
+        elif glb.runTimeItems[itemId][glb.isSnappingUp]:
+            logging.warning('{} 不是抢购商品, 会自动购买'.format(itemId))
+            glb.runTimeItems[itemId][glb.isSnappingUp] = False
 
 
 def _monitor(isInStockApiParam):
@@ -70,10 +84,10 @@ def _monitor(isInStockApiParam):
                     if value['skuState'] == 0 or value['StockState'] not in (33, 40):
                         glb.runTimeItems[itemId][glb.isInStock] = False
                     else:
-                        logging.warning('{} 有货'.format(itemId))
                         glb.runTimeItems[itemId][glb.isInStock] = True
-                        Thread(target=buy, args=(itemId,)).start()
-                        Thread(target=checkSnappingUp, args=((itemId,),)).start()
+                        if account.canBuy(itemId):
+                            logging.warning('{} 有货 且不是抢购商品'.format(itemId))
+                            Thread(target=buy, args=(itemId,)).start()
             except JSONDecodeError:
                 continue
 

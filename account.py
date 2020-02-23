@@ -30,9 +30,11 @@ class Account:
                     glb.timeoutLogLvl: logging.DEBUG}, timeout=5)
 
     def buy(self, itemId):
-        while self.isBuying:
+        while True:
             if not canBuy(itemId):
                 return
+            if not self.isBuying:
+                break
         self.isBuying = True
         success = [False]
         logging.warning('开始购买 ({})'.format(', '.join((self.id, itemId))))

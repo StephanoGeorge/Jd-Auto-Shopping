@@ -3,6 +3,7 @@ from threading import Thread
 import glb
 import monitor
 
+# 初始化
 glb.init()
 monitor.init()
 # 检查登录

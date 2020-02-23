@@ -129,7 +129,7 @@ def request(
             return None
         except Exception as e:
             if resp is None:
-                logging.log(_defaultLogLvl, '{} 失败, 无 Response'.format(actionName))
+                logging.log(_defaultLogLvl, '{} 失败, 无响应'.format(actionName))
                 continue
             else:
                 logging.log(_defaultLogLvl, '\n\t'.join(('{} 失败'.format(actionName), str(resp.status_code),

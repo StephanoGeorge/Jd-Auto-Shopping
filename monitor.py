@@ -85,11 +85,19 @@ def _monitor(isInStockApiParam):
                         glb.runTimeItems[itemId][glb.isInStock] = False
                     else:
                         glb.runTimeItems[itemId][glb.isInStock] = True
-                        if account.canBuy(itemId):
-                            logging.warning('{} 有货 且不是抢购商品'.format(itemId))
+                        if canBuy(itemId):
                             Thread(target=buy, args=(itemId,)).start()
             except JSONDecodeError:
                 continue
+
+
+def canBuy(itemId):
+    item = glb.runTimeItems[itemId]
+    if item[glb.isInStock] and not item[glb.isSnappingUp]:
+        logging.warning('{} 有货 且不是抢购商品'.format(itemId))
+        return True
+    else:
+        return False
 
 
 def buy(itemId):

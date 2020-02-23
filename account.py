@@ -7,10 +7,7 @@ from random import random
 import glb
 import requests
 
-
-def canBuy(itemId):
-    item = glb.runTimeItems[itemId]
-    return item[glb.isInStock] and not item[glb.isSnappingUp]
+import monitor
 
 
 class Account:
@@ -31,7 +28,7 @@ class Account:
 
     def buy(self, itemId):
         while True:
-            if not canBuy(itemId):
+            if not monitor.canBuy(itemId):
                 return
             if not self.isBuying:
                 break

@@ -65,9 +65,12 @@ def _checkSnappingUp():
             if not glb.runTimeItems[itemId][glb.isSnappingUp]:
                 logging.warning('{} 是抢购商品, 不自动购买'.format(itemId))
                 glb.runTimeItems[itemId][glb.isSnappingUp] = True
-        elif glb.runTimeItems[itemId][glb.isSnappingUp]:
-            logging.warning('{} 不是抢购商品, 会自动购买'.format(itemId))
-            glb.runTimeItems[itemId][glb.isSnappingUp] = False
+        else:
+            if glb.runTimeItems[itemId][glb.isSnappingUp]:
+                logging.warning('{} 不是抢购商品, 会自动购买'.format(itemId))
+                glb.runTimeItems[itemId][glb.isSnappingUp] = False
+            if canBuy(itemId):
+                Thread(target=buy, args=(itemId,)).start()
 
 
 def _monitor(isInStockApiParam):

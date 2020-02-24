@@ -88,15 +88,18 @@ def request(
                     _currAccountIndex += 1
             resp = sess.request(
                 method, url, params, data,
-                headers={'Host': re.search('https?://(.*?)(/|$)', url).group(1),
+                headers={'host': re.search('https?://(.*?)(/|$)', url).group(1),
                          **headers},
                 cookies=cookies,
                 timeout=timeout,
                 allow_redirects=False)
-            if 'Location' in resp.headers:
+            if 'location' in resp.headers:
                 logging.log(_redirectLogLvl, '从 {} 重定向至 {}'.format(url, resp.headers['Location']))
-                if '//trade.jd.com/orderBack.html' in resp.headers['Location']:
-                    return None
+                errorUrls = ['//trade.jd.com/orderBack.html',
+                             '//www.jd.com/error2.aspx']
+                for url in errorUrls:
+                    if url in resp.headers['location']:
+                        return None
                 if redirect:
                     url = resp.headers['location']
                     # headers['Referer'] =

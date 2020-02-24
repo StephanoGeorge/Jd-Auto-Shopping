@@ -61,26 +61,27 @@ class Account:
             riskControl = re.search('riskControl" value="(.+?)"', resp.text).group(1)
 
             def submitOrderCheck(_resp, args):
-                if _resp.json()['resultCode'] in (60123, 600157):
+                respObj = _resp.json()
+                if respObj['resultCode'] in (60123, 600157):
                     logging.error('提交订单 ({}) 失败 (message: {})'.format(
-                        ', '.join((args[0].id, args[1])), _resp.json()['message']))
+                        ', '.join((args[0].id, args[1])), respObj['message']))
                     return False
-                elif _resp.json()['resultCode'] is 600158:
+                elif respObj['resultCode'] is 600158:
                     logging.error('提交订单 ({}) 失败 (无货)'.format(', '.join((args[0].id, args[1]))))
                     glb.runTimeItems[args[1]][glb.isInStock] = False
                     return False
-                elif _resp.json()['resultCode'] is 60017:
+                elif respObj['resultCode'] is 60017:
                     logging.error('提交订单 ({}) 失败 (请求过于频繁), 睡眠5s'.format(', '.join((args[0].id, args[1]))))
                     time.sleep(5)
                     return True
-                elif _resp.json()['success'] is True:
+                elif respObj['success'] is True:
                     logging.error('\n\n\n提交订单 ({}) 成功!!!!!!!!!!!!!!!!!!!\n\n\n'.format(
                         ', '.join((args[0].id, args[1]))))
                     args[2][0] = True
                     return False
                 else:
                     logging.error('提交订单 ({}) 失败 ({})'.format(
-                        ', '.join((args[0].id, args[1])), _resp.json()))
+                        ', '.join((args[0].id, args[1])), respObj))
                     return False
 
             # 提交订单

@@ -66,15 +66,15 @@ class Account:
                     logging.error('提交订单 ({}) 失败 (message: {})'.format(
                         ', '.join((args[0].id, args[1])), respObj['message']))
                     return False
-                elif respObj['resultCode'] is 600158:
+                elif respObj['resultCode'] == 600158:
                     logging.error('提交订单 ({}) 失败 (无货)'.format(', '.join((args[0].id, args[1]))))
                     glb.runTimeItems[args[1]][glb.isInStock] = False
                     return False
-                elif respObj['resultCode'] is 60017:
+                elif respObj['resultCode'] == 60017:
                     logging.error('提交订单 ({}) 失败 (请求过于频繁), 睡眠5s'.format(', '.join((args[0].id, args[1]))))
                     time.sleep(5)
                     return True
-                elif respObj['success'] is True:
+                elif respObj['success']:
                     logging.error('\n\n\n提交订单 ({}) 成功!!!!!!!!!!!!!!!!!!!\n\n\n'.format(
                         ', '.join((args[0].id, args[1]))))
                     args[2][0] = True

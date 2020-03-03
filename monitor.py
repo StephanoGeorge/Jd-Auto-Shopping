@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 from json import JSONDecodeError
 import time
 from threading import Thread
@@ -62,7 +63,9 @@ def _checkSnappingUp():
                     glb.timeoutLogLvl: logging.DEBUG,  # 请求超时的日志等级
                     glb.tooManyFailureLogLvl: logging.DEBUG},  # 过多失败的日志等级
             timeout=3)
-        if resp is not None and resp.text != '{"error":"pss info is null"}':
+        if resp is None or resp.text[:1] != '{':
+            continue
+        if resp.text != '{"error":"pss info is null"}':
             if not glb.runTimeItems[itemId][glb.isSnappingUp]:
                 logging.warning('{} 是抢购商品, 不自动购买'.format(itemId))
                 glb.runTimeItems[itemId][glb.isSnappingUp] = True
@@ -77,7 +80,7 @@ def _checkSnappingUp():
 def _monitor(isInStockApiParam):
     while True:
         resp = glb.request('监控库存', None, glb.GET, 'https://c0.3.cn/stocks',
-                           params=isInStockApiParam, headers={'cookie': None},
+                           params=isInStockApiParam, headers={'cookie': None}, redirect=False,
                            logLvl={glb.successLogLvl: logging.DEBUG,  # 请求成功的日志等级
                                    glb.timeoutLogLvl: logging.DEBUG,  # 请求超时的日志等级
                                    glb.tooManyFailureLogLvl: logging.DEBUG},  # 过多失败的日志等级

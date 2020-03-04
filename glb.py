@@ -39,7 +39,7 @@ accountList = None
 
 def init():
     global accountList, config, runTimeItems
-    with open(configFileName, 'r', 'utf-8') as file:
+    with open(configFileName, encoding='utf-8') as file:
         configStr = file.read()
         # remove unASCII char
         configStr = re.sub(r'[^\u0000-\u007F]', '', configStr)
